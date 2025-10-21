@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'core/constants/app_colors.dart';
 import 'routes/app_routes.dart';
 
+import 'package:iqnock/presentation/screens/leaderboard/leaderboard_screen.dart'; //bisa dihapus, dibuat cek desain leaderboard
+
 void main() {
   runApp(const IqnockApp());
 }
@@ -15,6 +17,7 @@ class IqnockApp extends StatelessWidget {
       title: 'Iqnock',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
+        fontFamily: 'Baloo-Regular',
         primaryColor: AppColors.primary,
         scaffoldBackgroundColor: AppColors.background,
         colorScheme: ColorScheme.dark(
@@ -40,8 +43,11 @@ class IqnockApp extends StatelessWidget {
           ),
         ),
       ),
-      initialRoute: AppRoutes.login,
-      onGenerateRoute: AppRoutes.generateRoute,
+
+      home:
+          const LeaderboardScreen(), //bisa dihapus, dibuat cek desain leaderboard
+      //initialRoute: AppRoutes.login,
+      //onGenerateRoute: AppRoutes.generateRoute,
     );
   }
 }
