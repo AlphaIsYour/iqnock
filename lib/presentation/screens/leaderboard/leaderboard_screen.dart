@@ -23,7 +23,7 @@ class LeaderboardScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.lightGrey,
       appBar: AppBar(
-        backgroundColor: AppColors.maroonDark,
+        backgroundColor: AppColors.maroon,
         centerTitle: true,
         title: const Text("Papan Peringkat", style: AppText.heading),
       ),
@@ -39,7 +39,7 @@ class LeaderboardScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               child: Container(
                 decoration: BoxDecoration(
-                  color: isUser ? AppColors.red : AppColors.maroonDark,
+                  color: isUser ? AppColors.red : AppColors.maroon,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 padding: const EdgeInsets.symmetric(
@@ -119,7 +119,7 @@ class LeaderboardScreen extends StatelessWidget {
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
-        backgroundColor: AppColors.maroonDark,
+        backgroundColor: AppColors.maroon,
         selectedItemColor: AppColors.gold,
         unselectedItemColor: AppColors.gold,
         currentIndex: 1, // posisi aktif di "Papan Peringkat"
