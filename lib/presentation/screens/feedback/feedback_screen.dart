@@ -1,32 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_text.dart';
 
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+class FeedbackScreen extends StatefulWidget {
+  const FeedbackScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Feedback',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(primarySwatch: Colors.red),
-      home: const FeedbackPage(),
-    );
-  }
+  State<FeedbackScreen> createState() => _FeedbackScreenState();
 }
 
-class FeedbackPage extends StatefulWidget {
-  const FeedbackPage({Key? key}) : super(key: key);
-
-  @override
-  State<FeedbackPage> createState() => _FeedbackPageState();
-}
-
-class _FeedbackPageState extends State<FeedbackPage> {
+class _FeedbackScreenState extends State<FeedbackScreen> {
   final TextEditingController _namaController = TextEditingController(
     text: 'user001',
   );
@@ -39,8 +23,6 @@ class _FeedbackPageState extends State<FeedbackPage> {
     text: 'Berikan Deskripsi Soalmu.',
   );
 
-  int _selectedIndex = 3;
-
   @override
   void dispose() {
     _namaController.dispose();
@@ -49,12 +31,6 @@ class _FeedbackPageState extends State<FeedbackPage> {
     _kata2Controller.dispose();
     _deskripsiController.dispose();
     super.dispose();
-  }
-
-  void _onNavItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
   }
 
   void _submitFeedback() {
@@ -69,88 +45,65 @@ class _FeedbackPageState extends State<FeedbackPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFC5C5D8),
+      backgroundColor: AppColors.lightGrey,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF7D2424),
+        backgroundColor: AppColors.maroon,
         elevation: 0,
         toolbarHeight: 70,
-        title: const Text(
-          'Feedback',
-          style: TextStyle(
-            color: Color(0xFFF4D03F),
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        automaticallyImplyLeading: false,
+        title: Text('Feedback', style: AppText.heading),
         centerTitle: true,
-        systemOverlayStyle: const SystemUiOverlayStyle(
-          statusBarColor: Color(0xFF5C1A1A),
-          statusBarIconBrightness: Brightness.light,
-        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            // Greeting
             Container(
               padding: const EdgeInsets.symmetric(vertical: 12),
-              child: const Text(
+              child: Text(
                 'Ayo kirimkan feedback untuk kami!',
-                style: TextStyle(
+                style: AppText.bodyWhite.copyWith(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF1A1A1A),
+                  color: AppColors.black,
                 ),
                 textAlign: TextAlign.center,
               ),
             ),
             const SizedBox(height: 16),
-
-            // Form Nama
             _buildFormRow('Nama', _namaController, 'Masukkan nama'),
             const SizedBox(height: 14),
-
-            // Form Email
             _buildFormRow('Email', _emailController, 'Masukkan email'),
             const SizedBox(height: 14),
-
-            // Form Kata Pertama
             _buildFormRow(
               'Kata Pertama',
               _kata1Controller,
               'Bug/Saran/Lainnya',
             ),
             const SizedBox(height: 14),
-
-            // Form Kata Kedua
             _buildFormRow('Kata Kedua', _kata2Controller, 'Rating 1-5'),
             const SizedBox(height: 14),
-
-            // Form Deskripsi (menyatu dengan auto-expand)
             _buildDescriptionField(),
             const SizedBox(height: 24),
-
-            // Tombol Kirim
             SizedBox(
               width: double.infinity,
               height: 52,
               child: ElevatedButton(
                 onPressed: _submitFeedback,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFF4D03F),
+                  backgroundColor: AppColors.gold,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(26),
                   ),
                   elevation: 4,
-                  shadowColor: const Color(0xFFF4D03F).withOpacity(0.4),
+                  shadowColor: AppColors.gold.withOpacity(0.4),
                 ),
-                child: const Text(
+                child: Text(
                   'Kirim',
-                  style: TextStyle(
+                  style: AppText.bodyWhite.copyWith(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF1A1A1A),
+                    color: AppColors.maroon,
                   ),
                 ),
               ),
@@ -159,43 +112,61 @@ class _FeedbackPageState extends State<FeedbackPage> {
           ],
         ),
       ),
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFF6B1F1F), Color(0xFF5C1A1A)],
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: AppColors.maroon,
+        selectedItemColor: AppColors.gold,
+        unselectedItemColor: AppColors.gold,
+        selectedLabelStyle: AppText.bodyGold.copyWith(fontSize: 12),
+        unselectedLabelStyle: AppText.bodyGold.copyWith(fontSize: 12),
+        currentIndex: 2,
+        items: [
+          BottomNavigationBarItem(
+            icon: Image.asset(
+              'assets/icons/main_menu.png',
+              width: 20,
+              height: 20,
+            ),
+            label: "Main Menu",
           ),
-        ),
-        child: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: Colors.transparent,
-          selectedItemColor: const Color(0xFFF4D03F),
-          unselectedItemColor: const Color(0xFFF4D03F),
-          selectedFontSize: 12,
-          unselectedFontSize: 12,
-          currentIndex: _selectedIndex,
-          onTap: _onNavItemTapped,
-          elevation: 0,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home, size: 26),
-              label: 'Main Menu',
+          BottomNavigationBarItem(
+            icon: Image.asset(
+              'assets/icons/papan_peringkat.png',
+              width: 24,
+              height: 24,
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.star, size: 26),
-              label: 'Papan Peringkat',
+            label: "Papan Peringkat",
+          ),
+          BottomNavigationBarItem(
+            icon: Image.asset(
+              'assets/icons/kirim_soal.png',
+              width: 22,
+              height: 22,
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.send, size: 26),
-              label: 'Kirim Soal',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person, size: 26),
-              label: 'Akun',
-            ),
-          ],
-        ),
+            label: "Kirim Soal",
+          ),
+          BottomNavigationBarItem(
+            icon: Image.asset('assets/icons/akun.png', width: 26, height: 26),
+            label: "Akun",
+          ),
+        ],
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              Navigator.pushReplacementNamed(context, '/home');
+              break;
+            case 1:
+              Navigator.pushReplacementNamed(context, '/leaderboard');
+              break;
+            case 2:
+              break;
+            case 3:
+              Navigator.pushReplacementNamed(context, '/account');
+              break;
+            case 4:
+              break;
+          }
+        },
       ),
     );
   }
@@ -219,7 +190,6 @@ class _FeedbackPageState extends State<FeedbackPage> {
       ),
       child: Row(
         children: [
-          // Label dengan background merah maroon dan text putih
           Container(
             width: 100,
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
@@ -240,17 +210,16 @@ class _FeedbackPageState extends State<FeedbackPage> {
               textAlign: TextAlign.center,
             ),
           ),
-          // Input field dengan background putih dan text hitam
           Expanded(
             child: TextField(
               controller: controller,
               decoration: InputDecoration(
                 hintText: hint,
                 hintStyle: TextStyle(color: Colors.grey[400], fontSize: 13),
-                filled: false, // Tambahkan ini
+                filled: false,
                 border: InputBorder.none,
-                focusedBorder: InputBorder.none, // Tambahkan ini
-                enabledBorder: InputBorder.none, // Tambahkan ini
+                focusedBorder: InputBorder.none,
+                enabledBorder: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 14,
                   vertical: 12,

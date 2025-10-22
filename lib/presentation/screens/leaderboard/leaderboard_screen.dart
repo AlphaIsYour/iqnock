@@ -122,7 +122,9 @@ class LeaderboardScreen extends StatelessWidget {
         backgroundColor: AppColors.maroon,
         selectedItemColor: AppColors.gold,
         unselectedItemColor: AppColors.gold,
-        currentIndex: 1, // posisi aktif di "Papan Peringkat"
+        selectedLabelStyle: AppText.bodyGold.copyWith(fontSize: 12),
+        unselectedLabelStyle: AppText.bodyGold.copyWith(fontSize: 12),
+        currentIndex: 1,
         items: [
           BottomNavigationBarItem(
             icon: Image.asset(
@@ -153,6 +155,23 @@ class LeaderboardScreen extends StatelessWidget {
             label: "Akun",
           ),
         ],
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              Navigator.pushReplacementNamed(context, '/home');
+              break;
+            case 1:
+              break;
+            case 2:
+              Navigator.pushReplacementNamed(context, '/feedback');
+              break;
+            case 3:
+              Navigator.pushReplacementNamed(context, '/account');
+              break;
+            case 4:
+              break;
+          }
+        },
       ),
     );
   }

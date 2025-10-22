@@ -13,9 +13,12 @@ class GameScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppColors.maroon,
         centerTitle: true,
-        title: const Text("Level 1", style: AppText.heading),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppColors.gold),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text("Level 1-10", style: AppText.heading),
         actions: [
-          // Info Nyawa
           Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: Row(
@@ -26,7 +29,6 @@ class GameScreen extends StatelessWidget {
               ],
             ),
           ),
-          // Info Hint
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
             child: Row(
@@ -43,12 +45,12 @@ class GameScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: GridView.builder(
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 4,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
+            crossAxisCount: 5,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
             childAspectRatio: 1,
           ),
-          itemCount: 20,
+          itemCount: 10,
           itemBuilder: (context, index) {
             final int levelNumber = index + 1;
             final bool isUnlocked = levelNumber == 1;
@@ -68,85 +70,44 @@ class GameScreen extends StatelessWidget {
               child: Container(
                 decoration: BoxDecoration(
                   color: isUnlocked ? AppColors.red : AppColors.maroon,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: isUnlocked ? AppColors.gold : AppColors.brownGold,
                     width: 2,
                   ),
                 ),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    if (isUnlocked)
-                      Text(
-                        '$levelNumber',
-                        style: AppText.bodyWhite.copyWith(
-                          fontSize: 28,
-                          color: AppColors.white,
-                        ),
-                      )
-                    else
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.lock,
-                            color: AppColors.lightGrey,
-                            size: 32,
+                child: Center(
+                  child: isUnlocked
+                      ? Text(
+                          '$levelNumber',
+                          style: AppText.bodyWhite.copyWith(
+                            fontSize: 24,
+                            color: AppColors.white,
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '$levelNumber',
-                            style: AppText.bodyWhite.copyWith(
-                              fontSize: 16,
+                        )
+                      : Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.lock,
                               color: AppColors.lightGrey,
+                              size: 24,
                             ),
-                          ),
-                        ],
-                      ),
-                  ],
+                            const SizedBox(height: 2),
+                            Text(
+                              '$levelNumber',
+                              style: AppText.bodyWhite.copyWith(
+                                fontSize: 12,
+                                color: AppColors.lightGrey,
+                              ),
+                            ),
+                          ],
+                        ),
                 ),
               ),
             );
           },
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: AppColors.maroon,
-        selectedItemColor: AppColors.gold,
-        unselectedItemColor: AppColors.gold,
-        currentIndex: 0,
-        items: [
-          BottomNavigationBarItem(
-            icon: Image.asset(
-              'assets/icons/main_menu.png',
-              width: 20,
-              height: 20,
-            ),
-            label: "Main Menu",
-          ),
-          BottomNavigationBarItem(
-            icon: Image.asset(
-              'assets/icons/papan_peringkat.png',
-              width: 24,
-              height: 24,
-            ),
-            label: "Papan Peringkat",
-          ),
-          BottomNavigationBarItem(
-            icon: Image.asset(
-              'assets/icons/kirim_soal.png',
-              width: 22,
-              height: 22,
-            ),
-            label: "Kirim Soal",
-          ),
-          BottomNavigationBarItem(
-            icon: Image.asset('assets/icons/akun.png', width: 26, height: 26),
-            label: "Akun",
-          ),
-        ],
       ),
     );
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_text.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -11,17 +12,11 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppColors.maroon,
         elevation: 0,
+        automaticallyImplyLeading: false,
         title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppColors.gold,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(Icons.person, color: AppColors.maroon, size: 20),
-            ),
-            const Spacer(),
+            Image.asset('assets/logo/iqnock.png', height: 40),
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
@@ -35,7 +30,7 @@ class HomeScreen extends StatelessWidget {
       ),
       body: Column(
         children: [
-          // Header Points Section
+          // Total Poin Section
           Container(
             width: double.infinity,
             color: AppColors.maroon,
@@ -43,9 +38,29 @@ class HomeScreen extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildPointTab('Total Poin', true),
-                const SizedBox(width: 10),
-                _buildPointTab('Juara Poin', false),
+                Text(
+                  'Total Poin',
+                  style: AppText.bodyGold.copyWith(fontSize: 16),
+                ),
+                const SizedBox(width: 15),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.gold,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '0',
+                    style: AppText.bodyWhite.copyWith(
+                      fontSize: 16,
+                      color: AppColors.maroon,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -76,6 +91,8 @@ class HomeScreen extends StatelessWidget {
         selectedItemColor: AppColors.gold,
         unselectedItemColor: AppColors.gold,
         currentIndex: 0,
+        selectedLabelStyle: AppText.bodyGold.copyWith(fontSize: 12),
+        unselectedLabelStyle: AppText.bodyGold.copyWith(fontSize: 12),
         items: [
           BottomNavigationBarItem(
             icon: Image.asset(
@@ -109,7 +126,6 @@ class HomeScreen extends StatelessWidget {
         onTap: (index) {
           switch (index) {
             case 0:
-              // Already on home
               break;
             case 1:
               Navigator.pushNamed(context, '/leaderboard');
@@ -118,29 +134,12 @@ class HomeScreen extends StatelessWidget {
               Navigator.pushNamed(context, '/feedback');
               break;
             case 3:
-              // TODO: Navigate to account screen
+              Navigator.pushReplacementNamed(context, '/account');
+              break;
+            case 4:
               break;
           }
         },
-      ),
-    );
-  }
-
-  Widget _buildPointTab(String label, bool isActive) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      decoration: BoxDecoration(
-        color: isActive ? AppColors.gold : Colors.transparent,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.gold, width: 2),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: isActive ? AppColors.maroon : AppColors.gold,
-          fontWeight: FontWeight.bold,
-          fontSize: 12,
-        ),
       ),
     );
   }
@@ -169,8 +168,7 @@ class HomeScreen extends StatelessWidget {
           children: [
             Text(
               level,
-              style: const TextStyle(
-                color: AppColors.white,
+              style: AppText.bodyWhite.copyWith(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
@@ -184,7 +182,7 @@ class HomeScreen extends StatelessWidget {
             ElevatedButton(
               onPressed: isUnlocked
                   ? () {
-                      Navigator.pushNamed(context, '/game', arguments: level);
+                      Navigator.pushNamed(context, '/game');
                     }
                   : null,
               style: ElevatedButton.styleFrom(
@@ -201,9 +199,10 @@ class HomeScreen extends StatelessWidget {
               ),
               child: Text(
                 buttonText,
-                style: const TextStyle(
+                style: AppText.bodyWhite.copyWith(
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
+                  color: AppColors.maroon,
                 ),
               ),
             ),

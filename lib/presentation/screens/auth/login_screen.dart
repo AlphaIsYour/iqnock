@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../routes/app_routes.dart';
 import '../../widgets/custom_button.dart';
+import '../../../core/constants/app_text.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -18,68 +19,60 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.maroon,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(height: 40),
-              Center(
-                child: Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Icon(
-                    Icons.sports_esports,
-                    size: 60,
-                    color: AppColors.secondary,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 32),
-              const Text(
-                'IQNOCK',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.secondary,
-                  letterSpacing: 2,
-                ),
-              ),
+              const SizedBox(height: 60),
+              // Logo
+              Image.asset('assets/logo/iqnock.png', width: 150, height: 150),
+              const SizedBox(height: 24),
+              Text('IQNOCK', style: AppText.heading.copyWith(fontSize: 36)),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'Tebak Gambar Challenge',
-                style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+                style: AppText.bodyWhite.copyWith(
+                  fontSize: 16,
+                  color: AppColors.lightGrey,
+                ),
               ),
               const SizedBox(height: 48),
+              // Email Field
               TextField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
+                style: const TextStyle(color: AppColors.black),
+                decoration: InputDecoration(
                   hintText: 'Email',
-                  prefixIcon: Icon(Icons.email, color: AppColors.secondary),
+                  hintStyle: TextStyle(color: Colors.grey[600]),
+                  prefixIcon: const Icon(Icons.email, color: AppColors.gold),
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
+              // Password Field
               TextField(
                 controller: _passwordController,
                 obscureText: _obscurePassword,
+                style: const TextStyle(color: AppColors.black),
                 decoration: InputDecoration(
                   hintText: 'Password',
-                  prefixIcon: const Icon(
-                    Icons.lock,
-                    color: AppColors.secondary,
-                  ),
+                  hintStyle: TextStyle(color: Colors.grey[600]),
+                  prefixIcon: const Icon(Icons.lock, color: AppColors.gold),
                   suffixIcon: IconButton(
                     icon: Icon(
                       _obscurePassword
                           ? Icons.visibility_off
                           : Icons.visibility,
-                      color: AppColors.textSecondary,
+                      color: Colors.grey[600],
                     ),
                     onPressed: () {
                       setState(() {
@@ -87,34 +80,46 @@ class _LoginScreenState extends State<LoginScreen> {
                       });
                     },
                   ),
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
               CustomButton(
                 text: 'LOGIN',
                 onPressed: () {
-                  // TODO: Implement login logic
+                  if (_emailController.text == 'admin@gmail.com' &&
+                      _passwordController.text == 'password') {
+                    Navigator.pushReplacementNamed(context, AppRoutes.home);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Email atau password salah!'),
+                        backgroundColor: AppColors.error,
+                      ),
+                    );
+                  }
                 },
               ),
               const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
+                  Text(
                     'Belum punya akun? ',
-                    style: TextStyle(color: AppColors.textSecondary),
+                    style: AppText.bodyWhite.copyWith(
+                      color: AppColors.lightGrey,
+                    ),
                   ),
                   TextButton(
                     onPressed: () {
                       Navigator.pushNamed(context, AppRoutes.register);
                     },
-                    child: const Text(
-                      'Daftar',
-                      style: TextStyle(
-                        color: AppColors.secondary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    child: Text('Daftar', style: AppText.bodyGold),
                   ),
                 ],
               ),

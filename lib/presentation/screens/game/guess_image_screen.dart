@@ -137,14 +137,19 @@ class _GuessImageScreenState extends State<GuessImageScreen> {
       backgroundColor: AppColors.lightGrey,
       appBar: AppBar(
         backgroundColor: AppColors.maroon,
-        centerTitle: true,
-        title: Text(
-          "Level 1 - Soal ${widget.levelNumber}",
-          style: AppText.heading,
-        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.gold),
           onPressed: () => Navigator.pop(context),
+        ),
+        title: Row(
+          children: [
+            Image.asset('assets/logo/iqnock.png', height: 30),
+            const SizedBox(width: 8),
+            Text(
+              "Soal ${widget.levelNumber}",
+              style: AppText.heading.copyWith(fontSize: 20),
+            ),
+          ],
         ),
         actions: [
           Padding(

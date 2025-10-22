@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../widgets/custom_button.dart';
+import '../../../core/constants/app_text.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -20,11 +21,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.maroon,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.secondary),
+          icon: const Icon(Icons.arrow_back, color: AppColors.gold),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -34,52 +36,63 @@ class _RegisterScreenState extends State<RegisterScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Daftar Akun',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.secondary,
-                ),
+                style: AppText.heading.copyWith(fontSize: 32),
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'Bergabung dan mulai bermain',
-                style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+                style: AppText.bodyWhite.copyWith(color: AppColors.lightGrey),
               ),
               const SizedBox(height: 32),
               TextField(
                 controller: _nameController,
-                decoration: const InputDecoration(
+                style: const TextStyle(color: AppColors.black),
+                decoration: InputDecoration(
                   hintText: 'Nama Lengkap',
-                  prefixIcon: Icon(Icons.person, color: AppColors.secondary),
+                  hintStyle: TextStyle(color: Colors.grey[600]),
+                  prefixIcon: const Icon(Icons.person, color: AppColors.gold),
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
               TextField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
+                style: const TextStyle(color: AppColors.black),
+                decoration: InputDecoration(
                   hintText: 'Email',
-                  prefixIcon: Icon(Icons.email, color: AppColors.secondary),
+                  hintStyle: TextStyle(color: Colors.grey[600]),
+                  prefixIcon: const Icon(Icons.email, color: AppColors.gold),
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
               TextField(
                 controller: _passwordController,
                 obscureText: _obscurePassword,
+                style: const TextStyle(color: AppColors.black),
                 decoration: InputDecoration(
                   hintText: 'Password',
-                  prefixIcon: const Icon(
-                    Icons.lock,
-                    color: AppColors.secondary,
-                  ),
+                  hintStyle: TextStyle(color: Colors.grey[600]),
+                  prefixIcon: const Icon(Icons.lock, color: AppColors.gold),
                   suffixIcon: IconButton(
                     icon: Icon(
                       _obscurePassword
                           ? Icons.visibility_off
                           : Icons.visibility,
-                      color: AppColors.textSecondary,
+                      color: Colors.grey[600],
                     ),
                     onPressed: () {
                       setState(() {
@@ -87,24 +100,32 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       });
                     },
                   ),
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
               TextField(
                 controller: _confirmPasswordController,
                 obscureText: _obscureConfirmPassword,
+                style: const TextStyle(color: AppColors.black),
                 decoration: InputDecoration(
                   hintText: 'Konfirmasi Password',
+                  hintStyle: TextStyle(color: Colors.grey[600]),
                   prefixIcon: const Icon(
                     Icons.lock_outline,
-                    color: AppColors.secondary,
+                    color: AppColors.gold,
                   ),
                   suffixIcon: IconButton(
                     icon: Icon(
                       _obscureConfirmPassword
                           ? Icons.visibility_off
                           : Icons.visibility,
-                      color: AppColors.textSecondary,
+                      color: Colors.grey[600],
                     ),
                     onPressed: () {
                       setState(() {
@@ -112,34 +133,36 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       });
                     },
                   ),
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
               CustomButton(
                 text: 'DAFTAR',
                 onPressed: () {
-                  // TODO: Implement register logic
+                  Navigator.pop(context);
                 },
               ),
               const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
+                  Text(
                     'Sudah punya akun? ',
-                    style: TextStyle(color: AppColors.textSecondary),
+                    style: AppText.bodyWhite.copyWith(
+                      color: AppColors.lightGrey,
+                    ),
                   ),
                   TextButton(
                     onPressed: () {
                       Navigator.pop(context);
                     },
-                    child: const Text(
-                      'Login',
-                      style: TextStyle(
-                        color: AppColors.secondary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    child: Text('Login', style: AppText.bodyGold),
                   ),
                 ],
               ),
