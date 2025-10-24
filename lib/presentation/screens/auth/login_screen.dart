@@ -3,6 +3,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../routes/app_routes.dart';
 import '../../widgets/custom_button.dart';
 import '../../../core/constants/app_text.dart';
+import '../../../data/services/api_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -14,7 +15,69 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _apiService = ApiService();
   bool _obscurePassword = true;
+  bool _isLoading = false;
+
+  Future<void> _handleLogin() async {
+    // Validasi input
+    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Email dan password harus diisi!'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final response = await _apiService.login(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
+
+      if (!mounted) return;
+
+      if (response['success'] == true) {
+        // Login berhasil
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Login berhasil!'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+
+        // Navigate ke home
+        Navigator.pushReplacementNamed(context, AppRoutes.home);
+      } else {
+        // Login gagal
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response['message'] ?? 'Login gagal!'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.error),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
               TextField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
+                enabled: !_isLoading,
                 style: const TextStyle(color: AppColors.black),
                 decoration: InputDecoration(
                   hintText: 'Email',
@@ -62,6 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
               TextField(
                 controller: _passwordController,
                 obscureText: _obscurePassword,
+                enabled: !_isLoading,
                 style: const TextStyle(color: AppColors.black),
                 decoration: InputDecoration(
                   hintText: 'Password',
@@ -89,22 +154,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              CustomButton(
-                text: 'LOGIN',
-                onPressed: () {
-                  if (_emailController.text == 'admin@gmail.com' &&
-                      _passwordController.text == 'password') {
-                    Navigator.pushReplacementNamed(context, AppRoutes.home);
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Email atau password salah!'),
-                        backgroundColor: AppColors.error,
-                      ),
-                    );
-                  }
-                },
-              ),
+              // Login Button
+              _isLoading
+                  ? const CircularProgressIndicator(color: AppColors.gold)
+                  : CustomButton(text: 'LOGIN', onPressed: _handleLogin),
               const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -116,9 +169,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   TextButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, AppRoutes.register);
-                    },
+                    onPressed: _isLoading
+                        ? null
+                        : () {
+                            Navigator.pushNamed(context, AppRoutes.register);
+                          },
                     child: Text('Daftar', style: AppText.bodyGold),
                   ),
                 ],

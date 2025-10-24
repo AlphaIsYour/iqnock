@@ -1,9 +1,62 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text.dart';
+import '../../../data/services/api_service.dart';
+import '../../../data/models/level_model.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final ApiService _apiService = ApiService();
+
+  List<LevelModel> _levels = [];
+  UserStats? _userStats;
+  bool _isLoading = true;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLevels();
+  }
+
+  Future<void> _loadLevels() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final response = await _apiService.getLevels();
+
+      if (response['success'] == true) {
+        final data = response['data'];
+
+        setState(() {
+          _levels = (data['levels'] as List)
+              .map((json) => LevelModel.fromJson(json))
+              .toList();
+          _userStats = UserStats.fromJson(data['user_stats']);
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _errorMessage = response['message'] ?? 'Failed to load levels';
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Error: $e';
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +106,7 @@ class HomeScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    '0',
+                    '${_userStats?.coins ?? 0}',
                     style: AppText.bodyWhite.copyWith(
                       fontSize: 16,
                       color: AppColors.maroon,
@@ -65,24 +118,7 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
           // Level List
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(20),
-              children: [
-                _buildLevelCard(context, 'LEVEL 1-10', 'Mulai', true),
-                const SizedBox(height: 15),
-                _buildLevelCard(context, 'LEVEL 11-20', 'Terkunci', false),
-                const SizedBox(height: 15),
-                _buildLevelCard(context, 'LEVEL 21-30', 'Terkunci', false),
-                const SizedBox(height: 15),
-                _buildLevelCard(context, 'LEVEL 31-40', 'Terkunci', false),
-                const SizedBox(height: 15),
-                _buildLevelCard(context, 'LEVEL 41-50', 'Terkunci', false),
-                const SizedBox(height: 15),
-                _buildLevelCard(context, 'LEVEL 51-60', 'Terkunci', false),
-              ],
-            ),
-          ),
+          Expanded(child: _buildContent()),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -144,11 +180,106 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildContent() {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(color: AppColors.maroon),
+      );
+    }
+
+    if (_errorMessage != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, size: 64, color: AppColors.red),
+            const SizedBox(height: 16),
+            Text(
+              _errorMessage!,
+              textAlign: TextAlign.center,
+              style: AppText.bodyWhite.copyWith(
+                color: AppColors.maroon,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _loadLevels,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.maroon,
+                foregroundColor: AppColors.gold,
+              ),
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_levels.isEmpty) {
+      return Center(
+        child: Text(
+          'No levels available',
+          style: AppText.bodyWhite.copyWith(
+            color: AppColors.maroon,
+            fontSize: 16,
+          ),
+        ),
+      );
+    }
+
+    // Group levels by 10s (1-10, 11-20, etc)
+    Map<String, List<LevelModel>> groupedLevels = {};
+    for (var level in _levels) {
+      int groupStart = ((level.levelNumber - 1) ~/ 10) * 10 + 1;
+      int groupEnd = groupStart + 9;
+      String groupKey = 'LEVEL $groupStart-$groupEnd';
+
+      if (!groupedLevels.containsKey(groupKey)) {
+        groupedLevels[groupKey] = [];
+      }
+      groupedLevels[groupKey]!.add(level);
+    }
+
+    return RefreshIndicator(
+      onRefresh: _loadLevels,
+      color: AppColors.maroon,
+      child: ListView(
+        padding: const EdgeInsets.all(20),
+        children: groupedLevels.entries.map((entry) {
+          String groupName = entry.key;
+          List<LevelModel> levelsInGroup = entry.value;
+
+          // Check if any level in group is unlocked
+          bool hasUnlockedLevel = levelsInGroup.any((l) => l.isUnlocked);
+
+          // Get first unlocked level or first level in group
+          LevelModel? representativeLevel = levelsInGroup.firstWhere(
+            (l) => l.isUnlocked,
+            orElse: () => levelsInGroup.first,
+          );
+
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 15),
+            child: _buildLevelCard(
+              context,
+              groupName,
+              hasUnlockedLevel ? 'Mulai' : 'Terkunci',
+              hasUnlockedLevel,
+              representativeLevel,
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
   Widget _buildLevelCard(
     BuildContext context,
     String level,
     String buttonText,
     bool isUnlocked,
+    LevelModel levelModel,
   ) {
     return Container(
       decoration: BoxDecoration(
@@ -182,7 +313,11 @@ class HomeScreen extends StatelessWidget {
             ElevatedButton(
               onPressed: isUnlocked
                   ? () {
-                      Navigator.pushNamed(context, '/game');
+                      Navigator.pushNamed(
+                        context,
+                        '/game',
+                        arguments: levelModel.levelNumber,
+                      );
                     }
                   : null,
               style: ElevatedButton.styleFrom(
