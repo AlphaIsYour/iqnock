@@ -3,6 +3,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text.dart';
 import '../../../data/services/api_service.dart';
 import '../../../data/models/level_model.dart';
+import '../game/game_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -58,6 +59,20 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> _navigateToGame(int levelNumber) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => GameScreen(startLevelNumber: levelNumber),
+      ),
+    );
+
+    // Refresh data setelah kembali dari game screen
+    if (result == true) {
+      _loadLevels();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -70,13 +85,18 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Image.asset('assets/logo/iqnock.png', height: 40),
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppColors.gold,
-                shape: BoxShape.circle,
+            GestureDetector(
+              onTap: () {
+                // TODO: Navigate to settings
+              },
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.gold,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.settings, color: AppColors.maroon, size: 20),
               ),
-              child: Icon(Icons.settings, color: AppColors.maroon, size: 20),
             ),
           ],
         ),
@@ -121,62 +141,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Expanded(child: _buildContent()),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: AppColors.maroon,
-        selectedItemColor: AppColors.gold,
-        unselectedItemColor: AppColors.gold,
-        currentIndex: 0,
-        selectedLabelStyle: AppText.bodyGold.copyWith(fontSize: 12),
-        unselectedLabelStyle: AppText.bodyGold.copyWith(fontSize: 12),
-        items: [
-          BottomNavigationBarItem(
-            icon: Image.asset(
-              'assets/icons/main_menu.png',
-              width: 20,
-              height: 20,
-            ),
-            label: "Main Menu",
-          ),
-          BottomNavigationBarItem(
-            icon: Image.asset(
-              'assets/icons/papan_peringkat.png',
-              width: 24,
-              height: 24,
-            ),
-            label: "Papan Peringkat",
-          ),
-          BottomNavigationBarItem(
-            icon: Image.asset(
-              'assets/icons/kirim_soal.png',
-              width: 22,
-              height: 22,
-            ),
-            label: "Kirim Soal",
-          ),
-          BottomNavigationBarItem(
-            icon: Image.asset('assets/icons/akun.png', width: 26, height: 26),
-            label: "Akun",
-          ),
-        ],
-        onTap: (index) {
-          switch (index) {
-            case 0:
-              break;
-            case 1:
-              Navigator.pushNamed(context, '/leaderboard');
-              break;
-            case 2:
-              Navigator.pushNamed(context, '/feedback');
-              break;
-            case 3:
-              Navigator.pushReplacementNamed(context, '/account');
-              break;
-            case 4:
-              break;
-          }
-        },
-      ),
+      bottomNavigationBar: _buildBottomNav(),
     );
   }
 
@@ -194,12 +159,15 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Icon(Icons.error_outline, size: 64, color: AppColors.red),
             const SizedBox(height: 16),
-            Text(
-              _errorMessage!,
-              textAlign: TextAlign.center,
-              style: AppText.bodyWhite.copyWith(
-                color: AppColors.maroon,
-                fontSize: 16,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Text(
+                _errorMessage!,
+                textAlign: TextAlign.center,
+                style: AppText.bodyWhite.copyWith(
+                  color: AppColors.maroon,
+                  fontSize: 16,
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -208,6 +176,10 @@ class _HomeScreenState extends State<HomeScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.maroon,
                 foregroundColor: AppColors.gold,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 12,
+                ),
               ),
               child: const Text('Retry'),
             ),
@@ -218,12 +190,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (_levels.isEmpty) {
       return Center(
-        child: Text(
-          'No levels available',
-          style: AppText.bodyWhite.copyWith(
-            color: AppColors.maroon,
-            fontSize: 16,
-          ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.info_outline, size: 64, color: AppColors.maroon),
+            const SizedBox(height: 16),
+            Text(
+              'No levels available',
+              style: AppText.bodyWhite.copyWith(
+                color: AppColors.maroon,
+                fontSize: 16,
+              ),
+            ),
+          ],
         ),
       );
     }
@@ -253,20 +232,21 @@ class _HomeScreenState extends State<HomeScreen> {
           // Check if any level in group is unlocked
           bool hasUnlockedLevel = levelsInGroup.any((l) => l.isUnlocked);
 
-          // Get first unlocked level or first level in group
-          LevelModel? representativeLevel = levelsInGroup.firstWhere(
-            (l) => l.isUnlocked,
-            orElse: () => levelsInGroup.first,
-          );
+          // Get first level in group
+          LevelModel firstLevel = levelsInGroup.first;
+
+          // Count completed levels in group
+          int completedCount = levelsInGroup.where((l) => l.isCompleted).length;
 
           return Padding(
             padding: const EdgeInsets.only(bottom: 15),
             child: _buildLevelCard(
               context,
               groupName,
-              hasUnlockedLevel ? 'Mulai' : 'Terkunci',
               hasUnlockedLevel,
-              representativeLevel,
+              firstLevel.levelNumber,
+              completedCount,
+              levelsInGroup.length,
             ),
           );
         }).toList(),
@@ -276,10 +256,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildLevelCard(
     BuildContext context,
-    String level,
-    String buttonText,
+    String levelName,
     bool isUnlocked,
-    LevelModel levelModel,
+    int startLevelNumber,
+    int completedCount,
+    int totalCount,
   ) {
     return Container(
       decoration: BoxDecoration(
@@ -297,33 +278,51 @@ class _HomeScreenState extends State<HomeScreen> {
         padding: const EdgeInsets.all(20),
         child: Row(
           children: [
-            Text(
-              level,
-              style: AppText.bodyWhite.copyWith(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        levelName,
+                        style: AppText.bodyWhite.copyWith(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      if (!isUnlocked)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8),
+                          child: Icon(
+                            Icons.lock,
+                            color: AppColors.gold,
+                            size: 18,
+                          ),
+                        ),
+                    ],
+                  ),
+                  if (isUnlocked && completedCount > 0)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        '$completedCount/$totalCount selesai',
+                        style: AppText.bodyGold.copyWith(fontSize: 12),
+                      ),
+                    ),
+                ],
               ),
             ),
-            if (!isUnlocked)
-              Padding(
-                padding: const EdgeInsets.only(left: 8),
-                child: Icon(Icons.lock, color: AppColors.gold, size: 20),
-              ),
-            const Spacer(),
+            const SizedBox(width: 12),
             ElevatedButton(
               onPressed: isUnlocked
-                  ? () {
-                      Navigator.pushNamed(
-                        context,
-                        '/game',
-                        arguments: levelModel.levelNumber,
-                      );
-                    }
+                  ? () => _navigateToGame(startLevelNumber)
                   : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.gold,
                 foregroundColor: AppColors.maroon,
                 disabledBackgroundColor: AppColors.gold.withOpacity(0.5),
+                disabledForegroundColor: AppColors.maroon.withOpacity(0.5),
                 padding: const EdgeInsets.symmetric(
                   horizontal: 30,
                   vertical: 12,
@@ -333,17 +332,108 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               child: Text(
-                buttonText,
+                isUnlocked ? 'Mulai' : 'Terkunci',
                 style: AppText.bodyWhite.copyWith(
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
-                  color: AppColors.maroon,
+                  color: isUnlocked
+                      ? AppColors.maroon
+                      : AppColors.maroon.withOpacity(0.5),
                 ),
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildBottomNav() {
+    return BottomNavigationBar(
+      type: BottomNavigationBarType.fixed,
+      backgroundColor: AppColors.maroon,
+      selectedItemColor: AppColors.gold,
+      unselectedItemColor: AppColors.gold.withOpacity(0.6),
+      currentIndex: 0,
+      selectedLabelStyle: AppText.bodyGold.copyWith(
+        fontSize: 12,
+        fontWeight: FontWeight.bold,
+      ),
+      unselectedLabelStyle: AppText.bodyGold.copyWith(fontSize: 12),
+      items: [
+        BottomNavigationBarItem(
+          icon: Image.asset(
+            'assets/icons/main_menu.png',
+            width: 20,
+            height: 20,
+            color: AppColors.gold,
+          ),
+          label: "Main Menu",
+        ),
+        BottomNavigationBarItem(
+          icon: Image.asset(
+            'assets/icons/papan_peringkat.png',
+            width: 24,
+            height: 24,
+            color: AppColors.gold.withOpacity(0.6),
+          ),
+          activeIcon: Image.asset(
+            'assets/icons/papan_peringkat.png',
+            width: 24,
+            height: 24,
+            color: AppColors.gold,
+          ),
+          label: "Papan Peringkat",
+        ),
+        BottomNavigationBarItem(
+          icon: Image.asset(
+            'assets/icons/kirim_soal.png',
+            width: 22,
+            height: 22,
+            color: AppColors.gold.withOpacity(0.6),
+          ),
+          activeIcon: Image.asset(
+            'assets/icons/kirim_soal.png',
+            width: 22,
+            height: 22,
+            color: AppColors.gold,
+          ),
+          label: "Kirim Soal",
+        ),
+        BottomNavigationBarItem(
+          icon: Image.asset(
+            'assets/icons/akun.png',
+            width: 26,
+            height: 26,
+            color: AppColors.gold.withOpacity(0.6),
+          ),
+          activeIcon: Image.asset(
+            'assets/icons/akun.png',
+            width: 26,
+            height: 26,
+            color: AppColors.gold,
+          ),
+          label: "Akun",
+        ),
+      ],
+      onTap: (index) async {
+        switch (index) {
+          case 0:
+            // Already on home
+            break;
+          case 1:
+            await Navigator.pushNamed(context, '/leaderboard');
+            // Refresh data setelah kembali
+            _loadLevels();
+            break;
+          case 2:
+            await Navigator.pushNamed(context, '/feedback');
+            break;
+          case 3:
+            await Navigator.pushReplacementNamed(context, '/account');
+            break;
+        }
+      },
     );
   }
 }

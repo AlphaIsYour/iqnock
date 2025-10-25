@@ -29,7 +29,18 @@ class AppRoutes {
       case home:
         return MaterialPageRoute(builder: (_) => const HomeScreen());
       case game:
-        return MaterialPageRoute(builder: (_) => const GameScreen());
+        // Get levelNumber from arguments
+        final levelNumber = settings.arguments as int?;
+        if (levelNumber == null) {
+          return MaterialPageRoute(
+            builder: (_) => Scaffold(
+              body: Center(child: Text('Error: Level number is required')),
+            ),
+          );
+        }
+        return MaterialPageRoute(
+          builder: (_) => GameScreen(startLevelNumber: levelNumber),
+        );
       case leaderboard:
         return MaterialPageRoute(builder: (_) => const LeaderboardScreen());
       case feedback:
