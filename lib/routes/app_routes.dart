@@ -7,8 +7,10 @@ import '../presentation/screens/game/game_screen.dart';
 import '../presentation/screens/leaderboard/leaderboard_screen.dart';
 import '../presentation/screens/feedback/feedback_screen.dart';
 import '../presentation/screens/account/account_screen.dart';
+import '../presentation/screens/splash/splash_screen.dart';
 
 class AppRoutes {
+  static const String splash = '/splash';
   static const String welcome = '/';
   static const String login = '/login';
   static const String register = '/register';
@@ -20,6 +22,8 @@ class AppRoutes {
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
+      case splash: // 👈 Tambah case
+        return MaterialPageRoute(builder: (_) => const SplashScreen());
       case welcome:
         return MaterialPageRoute(builder: (_) => const WelcomeScreen());
       case login:

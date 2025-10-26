@@ -3,7 +3,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../routes/app_routes.dart';
 import '../../widgets/custom_button.dart';
 import '../../../core/constants/app_text.dart';
-import '../../../data/services/api_service.dart';
+import '../../../data/repositories/auth_repository.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,7 +15,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _apiService = ApiService();
+  final _authRepository = AuthRepository();
   bool _obscurePassword = true;
   bool _isLoading = false;
 
@@ -36,7 +36,7 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      final response = await _apiService.login(
+      final response = await _authRepository.login(
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
@@ -49,11 +49,11 @@ class _LoginScreenState extends State<LoginScreen> {
           const SnackBar(
             content: Text('Login berhasil!'),
             backgroundColor: Colors.green,
-            duration: Duration(seconds: 2),
+            duration: Duration(seconds: 1),
           ),
         );
 
-        // Navigate ke home
+        // Navigate ke home (token sudah tersimpan otomatis)
         Navigator.pushReplacementNamed(context, AppRoutes.home);
       } else {
         // Login gagal
@@ -91,7 +91,26 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               const SizedBox(height: 60),
               // Logo
-              Image.asset('assets/logo/iqnock.png', width: 150, height: 150),
+              Image.asset(
+                'assets/logo/iqnock.png',
+                width: 150,
+                height: 150,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    width: 150,
+                    height: 150,
+                    decoration: BoxDecoration(
+                      color: AppColors.gold,
+                      borderRadius: BorderRadius.circular(75),
+                    ),
+                    child: const Icon(
+                      Icons.emoji_emotions,
+                      size: 80,
+                      color: AppColors.maroon,
+                    ),
+                  );
+                },
+              ),
               const SizedBox(height: 24),
               Text('IQNOCK', style: AppText.heading.copyWith(fontSize: 36)),
               const SizedBox(height: 8),

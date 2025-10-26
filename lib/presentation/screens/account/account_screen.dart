@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text.dart';
 import '../../../data/services/api_service.dart';
+import '../../../data/repositories/auth_repository.dart';
 import '../../../data/models/user_model.dart';
 
 class AccountScreen extends StatefulWidget {
@@ -13,6 +14,7 @@ class AccountScreen extends StatefulWidget {
 
 class _AccountScreenState extends State<AccountScreen> {
   final ApiService _apiService = ApiService();
+  final AuthRepository _authRepository = AuthRepository();
 
   UserModel? _user;
   int? _rank;
@@ -97,7 +99,7 @@ class _AccountScreenState extends State<AccountScreen> {
         ],
       ),
     );
-
+    print('Confirm logout: $confirm');
     if (confirm != true) return;
 
     setState(() {
@@ -105,12 +107,18 @@ class _AccountScreenState extends State<AccountScreen> {
     });
 
     try {
-      await _apiService.logout();
-
+      // Gunakan AuthRepository untuk logout (auto clear token)
+      print('Calling logout...');
+      await _authRepository.logout();
+      print('Logout success!');
       if (!mounted) return;
 
+      // Kembali ke welcome screen dan hapus semua route
+      print('Navigating to welcome...');
       Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+      print('Navigation done!');
     } catch (e) {
+      print('Logout error: $e');
       setState(() {
         _isLoggingOut = false;
       });
@@ -144,16 +152,26 @@ class _AccountScreenState extends State<AccountScreen> {
             children: [
               Icon(Icons.error_outline, size: 64, color: AppColors.red),
               const SizedBox(height: 16),
-              Text(
-                _errorMessage ?? 'Failed to load profile',
-                textAlign: TextAlign.center,
-                style: AppText.bodyWhite.copyWith(color: AppColors.maroon),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Text(
+                  _errorMessage ?? 'Failed to load profile',
+                  textAlign: TextAlign.center,
+                  style: AppText.bodyWhite.copyWith(
+                    color: AppColors.maroon,
+                    fontSize: 16,
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: _loadProfile,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.maroon,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 12,
+                  ),
                 ),
                 child: Text('Retry', style: AppText.bodyGold),
               ),
@@ -193,6 +211,16 @@ class _AccountScreenState extends State<AccountScreen> {
                   child: Image.asset(
                     'assets/icons/no_pfp.png',
                     fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: AppColors.maroon.withOpacity(0.1),
+                        child: Icon(
+                          Icons.person,
+                          size: 60,
+                          color: AppColors.maroon,
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),
@@ -239,18 +267,16 @@ class _AccountScreenState extends State<AccountScreen> {
                     SizedBox(
                       width: double.infinity,
                       height: 50,
-                      child: ElevatedButton(
+                      child: ElevatedButton.icon(
                         onPressed: _isLoggingOut ? null : _handleLogout,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.red,
-                          disabledBackgroundColor: AppColors.red.withOpacity(
-                            0.5,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25),
-                          ),
-                        ),
-                        child: _isLoggingOut
+                        icon: _isLoggingOut
+                            ? const SizedBox.shrink()
+                            : const Icon(
+                                Icons.logout,
+                                color: AppColors.white,
+                                size: 20,
+                              ),
+                        label: _isLoggingOut
                             ? SizedBox(
                                 width: 24,
                                 height: 24,
@@ -267,6 +293,15 @@ class _AccountScreenState extends State<AccountScreen> {
                                   color: AppColors.white,
                                 ),
                               ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.red,
+                          disabledBackgroundColor: AppColors.red.withOpacity(
+                            0.5,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(25),
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 30),
@@ -277,60 +312,7 @@ class _AccountScreenState extends State<AccountScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: AppColors.maroon,
-        selectedItemColor: AppColors.gold,
-        unselectedItemColor: AppColors.gold,
-        selectedLabelStyle: AppText.bodyGold.copyWith(fontSize: 12),
-        unselectedLabelStyle: AppText.bodyGold.copyWith(fontSize: 12),
-        currentIndex: 3,
-        items: [
-          BottomNavigationBarItem(
-            icon: Image.asset(
-              'assets/icons/main_menu.png',
-              width: 20,
-              height: 20,
-            ),
-            label: "Main Menu",
-          ),
-          BottomNavigationBarItem(
-            icon: Image.asset(
-              'assets/icons/papan_peringkat.png',
-              width: 24,
-              height: 24,
-            ),
-            label: "Papan Peringkat",
-          ),
-          BottomNavigationBarItem(
-            icon: Image.asset(
-              'assets/icons/kirim_soal.png',
-              width: 22,
-              height: 22,
-            ),
-            label: "Masukan",
-          ),
-          BottomNavigationBarItem(
-            icon: Image.asset('assets/icons/akun.png', width: 26, height: 26),
-            label: "Akun",
-          ),
-        ],
-        onTap: (index) {
-          switch (index) {
-            case 0:
-              Navigator.pushReplacementNamed(context, '/home');
-              break;
-            case 1:
-              Navigator.pushReplacementNamed(context, '/leaderboard');
-              break;
-            case 2:
-              Navigator.pushReplacementNamed(context, '/feedback');
-              break;
-            case 3:
-              break;
-          }
-        },
-      ),
+      bottomNavigationBar: _buildBottomNav(),
     );
   }
 
@@ -418,7 +400,14 @@ class _AccountScreenState extends State<AccountScreen> {
   Widget _buildStatItem(String iconPath, String value) {
     return Column(
       children: [
-        Image.asset(iconPath, width: 32, height: 32),
+        Image.asset(
+          iconPath,
+          width: 32,
+          height: 32,
+          errorBuilder: (context, error, stackTrace) {
+            return Icon(Icons.error, size: 32, color: AppColors.gold);
+          },
+        ),
         const SizedBox(height: 4),
         Text(
           value,
@@ -428,6 +417,93 @@ class _AccountScreenState extends State<AccountScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildBottomNav() {
+    return BottomNavigationBar(
+      type: BottomNavigationBarType.fixed,
+      backgroundColor: AppColors.maroon,
+      selectedItemColor: AppColors.gold,
+      unselectedItemColor: AppColors.gold.withOpacity(0.6),
+      selectedLabelStyle: AppText.bodyGold.copyWith(
+        fontSize: 12,
+        fontWeight: FontWeight.bold,
+      ),
+      unselectedLabelStyle: AppText.bodyGold.copyWith(fontSize: 12),
+      currentIndex: 3,
+      items: [
+        BottomNavigationBarItem(
+          icon: Image.asset(
+            'assets/icons/main_menu.png',
+            width: 20,
+            height: 20,
+            color: AppColors.gold.withOpacity(0.6),
+          ),
+          activeIcon: Image.asset(
+            'assets/icons/main_menu.png',
+            width: 20,
+            height: 20,
+            color: AppColors.gold,
+          ),
+          label: "Main Menu",
+        ),
+        BottomNavigationBarItem(
+          icon: Image.asset(
+            'assets/icons/papan_peringkat.png',
+            width: 24,
+            height: 24,
+            color: AppColors.gold.withOpacity(0.6),
+          ),
+          activeIcon: Image.asset(
+            'assets/icons/papan_peringkat.png',
+            width: 24,
+            height: 24,
+            color: AppColors.gold,
+          ),
+          label: "Papan Peringkat",
+        ),
+        BottomNavigationBarItem(
+          icon: Image.asset(
+            'assets/icons/kirim_soal.png',
+            width: 22,
+            height: 22,
+            color: AppColors.gold.withOpacity(0.6),
+          ),
+          activeIcon: Image.asset(
+            'assets/icons/kirim_soal.png',
+            width: 22,
+            height: 22,
+            color: AppColors.gold,
+          ),
+          label: "Masukan",
+        ),
+        BottomNavigationBarItem(
+          icon: Image.asset(
+            'assets/icons/akun.png',
+            width: 26,
+            height: 26,
+            color: AppColors.gold,
+          ),
+          label: "Akun",
+        ),
+      ],
+      onTap: (index) async {
+        switch (index) {
+          case 0:
+            Navigator.pushReplacementNamed(context, '/home');
+            break;
+          case 1:
+            await Navigator.pushNamed(context, '/leaderboard');
+            break;
+          case 2:
+            await Navigator.pushNamed(context, '/feedback');
+            break;
+          case 3:
+            // Already on account
+            break;
+        }
+      },
     );
   }
 }

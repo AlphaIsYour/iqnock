@@ -40,7 +40,7 @@ class IqnockApp extends StatelessWidget {
           ),
         ),
       ),
-      initialRoute: '/',
+      initialRoute: '/splash',
       onGenerateRoute: AppRoutes.generateRoute,
     );
   }
