@@ -415,7 +415,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
             height: 22,
             color: AppColors.gold,
           ),
-          label: "Kirim Soal",
+          label: "Masukan",
         ),
         BottomNavigationBarItem(
           icon: Image.asset(

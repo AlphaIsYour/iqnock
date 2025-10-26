@@ -398,7 +398,7 @@ class _HomeScreenState extends State<HomeScreen> {
             height: 22,
             color: AppColors.gold,
           ),
-          label: "Kirim Soal",
+          label: "Masukan",
         ),
         BottomNavigationBarItem(
           icon: Image.asset(
