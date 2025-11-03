@@ -86,8 +86,8 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Image.asset('assets/logo/iqnock.png', height: 40),
             GestureDetector(
-              onTap: () {
-                // TODO: Navigate to settings
+              onTap: () async {
+                await Navigator.pushNamed(context, '/setting');
               },
               child: Container(
                 padding: const EdgeInsets.all(8),
@@ -112,7 +112,7 @@ class _HomeScreenState extends State<HomeScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  'Total Poin',
+                  'Total Coin',
                   style: AppText.bodyGold.copyWith(fontSize: 16),
                 ),
                 const SizedBox(width: 15),

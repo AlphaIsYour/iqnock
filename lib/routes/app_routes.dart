@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:iqnock/presentation/screens/settings/setting_screen.dart';
 import '../presentation/screens/auth/welcome_screen.dart';
 import '../presentation/screens/auth/login_screen.dart';
 import '../presentation/screens/auth/register_screen.dart';
@@ -19,10 +20,11 @@ class AppRoutes {
   static const String leaderboard = '/leaderboard';
   static const String feedback = '/feedback';
   static const String account = '/account';
+  static const String setting = '/setting';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
-      case splash: // 👈 Tambah case
+      case splash:
         return MaterialPageRoute(builder: (_) => const SplashScreen());
       case welcome:
         return MaterialPageRoute(builder: (_) => const WelcomeScreen());
@@ -51,6 +53,8 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const FeedbackScreen());
       case account:
         return MaterialPageRoute(builder: (_) => const AccountScreen());
+      case setting:
+        return MaterialPageRoute(builder: (_) => const SettingScreen());
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(

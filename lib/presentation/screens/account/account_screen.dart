@@ -254,7 +254,7 @@ class _AccountScreenState extends State<AccountScreen> {
                       _rank != null ? '#$_rank' : 'Belum ada',
                     ),
                     const SizedBox(height: 15),
-                    _buildInfoCard('Total Poin', _user!.formattedScore),
+                    _buildInfoCard('Total Coin', _user!.formattedScore),
                     const SizedBox(height: 15),
                     _buildInfoCard(
                       'Level Saat Ini',
