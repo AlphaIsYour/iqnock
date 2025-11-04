@@ -68,38 +68,309 @@ class _AccountScreenState extends State<AccountScreen> {
     }
   }
 
+  Future<void> _showEditProfileDialog() async {
+    final usernameController = TextEditingController(text: _user!.name);
+    final passwordController = TextEditingController();
+    final confirmPasswordController = TextEditingController();
+    bool obscurePassword = true;
+    bool obscureConfirmPassword = true;
+
+    await showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          backgroundColor: AppColors.lightGrey,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Text(
+            'Edit Profil',
+            style: AppText.heading.copyWith(
+              fontSize: 20,
+              color: AppColors.maroon,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Username Field
+                TextField(
+                  controller: usernameController,
+                  style: AppText.bodyWhite.copyWith(color: AppColors.black),
+                  decoration: InputDecoration(
+                    labelText: 'Username',
+                    labelStyle: AppText.bodyWhite.copyWith(
+                      color: AppColors.maroon.withOpacity(0.7),
+                    ),
+                    prefixIcon: Icon(Icons.person, color: AppColors.maroon),
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                      borderSide: BorderSide(color: AppColors.maroon),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                      borderSide: BorderSide(
+                        color: AppColors.maroon.withOpacity(0.3),
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                      borderSide: BorderSide(
+                        color: AppColors.maroon,
+                        width: 2,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Password Field
+                TextField(
+                  controller: passwordController,
+                  obscureText: obscurePassword,
+                  style: AppText.bodyWhite.copyWith(color: AppColors.black),
+                  decoration: InputDecoration(
+                    labelText: 'Password Baru (Opsional)',
+                    labelStyle: AppText.bodyWhite.copyWith(
+                      color: AppColors.maroon.withOpacity(0.7),
+                    ),
+                    prefixIcon: Icon(Icons.lock, color: AppColors.maroon),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                        color: AppColors.maroon,
+                      ),
+                      onPressed: () {
+                        setDialogState(() {
+                          obscurePassword = !obscurePassword;
+                        });
+                      },
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                      borderSide: BorderSide(color: AppColors.maroon),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                      borderSide: BorderSide(
+                        color: AppColors.maroon.withOpacity(0.3),
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                      borderSide: BorderSide(
+                        color: AppColors.maroon,
+                        width: 2,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Confirm Password Field
+                TextField(
+                  controller: confirmPasswordController,
+                  obscureText: obscureConfirmPassword,
+                  style: AppText.bodyWhite.copyWith(color: AppColors.black),
+                  decoration: InputDecoration(
+                    labelText: 'Konfirmasi Password',
+                    labelStyle: AppText.bodyWhite.copyWith(
+                      color: AppColors.maroon.withOpacity(0.7),
+                    ),
+                    prefixIcon: Icon(Icons.lock_outline, color: AppColors.maroon),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        obscureConfirmPassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                        color: AppColors.maroon,
+                      ),
+                      onPressed: () {
+                        setDialogState(() {
+                          obscureConfirmPassword = !obscureConfirmPassword;
+                        });
+                      },
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                      borderSide: BorderSide(color: AppColors.maroon),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                      borderSide: BorderSide(
+                        color: AppColors.maroon.withOpacity(0.3),
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                      borderSide: BorderSide(
+                        color: AppColors.maroon,
+                        width: 2,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Kosongkan password jika tidak ingin mengubah',
+                  style: AppText.bodyWhite.copyWith(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'Batal',
+                style: AppText.bodyWhite.copyWith(
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                // Validasi
+                if (usernameController.text.trim().isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Username tidak boleh kosong'),
+                      backgroundColor: AppColors.red,
+                    ),
+                  );
+                  return;
+                }
+
+                if (passwordController.text.isNotEmpty) {
+                  if (passwordController.text.length < 6) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Password minimal 6 karakter'),
+                        backgroundColor: AppColors.red,
+                      ),
+                    );
+                    return;
+                  }
+
+                  if (passwordController.text !=
+                      confirmPasswordController.text) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Password tidak cocok'),
+                        backgroundColor: AppColors.red,
+                      ),
+                    );
+                    return;
+                  }
+                }
+
+                Navigator.pop(context);
+                
+                // TODO: Implement API call untuk update profile
+                // Contoh:
+                // await _apiService.updateProfile(
+                //   name: usernameController.text,
+                //   password: passwordController.text.isEmpty ? null : passwordController.text,
+                // );
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Profil berhasil diperbarui'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+
+                // Reload profile
+                _loadProfile();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.maroon,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+              ),
+              child: Text(
+                'Simpan',
+                style: AppText.bodyWhite.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _handleLogout() async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.surface,
+        backgroundColor: AppColors.lightGrey,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
         title: Text(
           'Konfirmasi Logout',
-          style: AppText.heading.copyWith(fontSize: 20),
+          style: AppText.heading.copyWith(
+            fontSize: 20,
+            color: AppColors.maroon,
+          ),
         ),
         content: Text(
           'Apakah kamu yakin ingin keluar?',
-          style: AppText.bodyWhite.copyWith(fontSize: 16),
+          style: AppText.bodyWhite.copyWith(
+            fontSize: 16,
+            color: AppColors.black,
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
             child: Text(
               'Batal',
-              style: AppText.bodyWhite.copyWith(color: Colors.grey),
+              style: AppText.bodyWhite.copyWith(
+                color: Colors.grey[600],
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.red,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
             child: Text(
               'Logout',
-              style: AppText.bodyWhite.copyWith(color: AppColors.red),
+              style: AppText.bodyWhite.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],
       ),
     );
-    print('Confirm logout: $confirm');
+
     if (confirm != true) return;
 
     setState(() {
@@ -107,18 +378,11 @@ class _AccountScreenState extends State<AccountScreen> {
     });
 
     try {
-      // Gunakan AuthRepository untuk logout (auto clear token)
-      print('Calling logout...');
       await _authRepository.logout();
-      print('Logout success!');
       if (!mounted) return;
 
-      // Kembali ke welcome screen dan hapus semua route
-      print('Navigating to welcome...');
       Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
-      print('Navigation done!');
     } catch (e) {
-      print('Logout error: $e');
       setState(() {
         _isLoggingOut = false;
       });
@@ -128,7 +392,7 @@ class _AccountScreenState extends State<AccountScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error logout: $e'),
-          backgroundColor: AppColors.error,
+          backgroundColor: AppColors.red,
         ),
       );
     }
@@ -197,14 +461,23 @@ class _AccountScreenState extends State<AccountScreen> {
           child: Column(
             children: [
               const SizedBox(height: 30),
-              // Profile Picture
+              // Profile Picture with Fixed Border
               Container(
                 width: 120,
                 height: 120,
                 decoration: BoxDecoration(
-                  color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppColors.gold, width: 3),
+                  border: Border.all(
+                    color: AppColors.white,
+                    width: 3,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.white.withOpacity(0.3),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(17),
@@ -213,7 +486,10 @@ class _AccountScreenState extends State<AccountScreen> {
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
-                        color: AppColors.maroon.withOpacity(0.1),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(17),
+                        ),
                         child: Icon(
                           Icons.person,
                           size: 60,
@@ -221,6 +497,30 @@ class _AccountScreenState extends State<AccountScreen> {
                         ),
                       );
                     },
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              // Edit Profile Button
+              ElevatedButton(
+                onPressed: _showEditProfileDialog,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.gold,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 10,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  elevation: 3,
+                ),
+                child: Text(
+                  'Edit Profil',
+                  style: AppText.bodyWhite.copyWith(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.white,
                   ),
                 ),
               ),
@@ -387,17 +687,15 @@ class _AccountScreenState extends State<AccountScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildStatItem('assets/icons/heart.png', '${_user!.hearts}'),
-          Container(width: 1, height: 30, color: AppColors.gold),
-          _buildStatItem('assets/icons/bulb.png', '${_user!.hints}'),
-          Container(width: 1, height: 30, color: AppColors.gold),
-          _buildStatItem('assets/icons/coin.png', '${_user!.coins}'),
+          _buildStatItem('assets/icons/coin.png', '${_user!.coins}', 'Coin'),
+          Container(width: 1, height: 50, color: AppColors.gold),
+          _buildStatItem('assets/icons/poin.png', _user!.formattedScore, 'Poin'),
         ],
       ),
     );
   }
 
-  Widget _buildStatItem(String iconPath, String value) {
+  Widget _buildStatItem(String iconPath, String value, String label) {
     return Column(
       children: [
         Image.asset(
@@ -405,15 +703,23 @@ class _AccountScreenState extends State<AccountScreen> {
           width: 32,
           height: 32,
           errorBuilder: (context, error, stackTrace) {
-            return Icon(Icons.error, size: 32, color: AppColors.gold);
+            return Icon(Icons.stars, size: 32, color: AppColors.gold);
           },
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 8),
         Text(
           value,
           style: AppText.bodyGold.copyWith(
-            fontSize: 16,
+            fontSize: 18,
             fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: AppText.bodyGold.copyWith(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
           ),
         ),
       ],
