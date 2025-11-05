@@ -255,6 +255,33 @@ class ApiService {
       return {'success': false, 'message': 'Network error: $e'};
     }
   }
+  // === QUESTION SUBMISSION ===
+
+  Future<Map<String, dynamic>> submitQuestion({
+    required String username,
+    required String email,
+    required String firstWord,
+    required String secondWord,
+    required String description,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/questions/submit'),
+        headers: await _getHeaders(),
+        body: jsonEncode({
+          'username': username,
+          'email': email,
+          'first_word': firstWord,
+          'second_word': secondWord,
+          'description': description,
+        }),
+      );
+
+      return _handleResponse(response);
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: $e'};
+    }
+  }
 
   // === HELPER METHODS ===
 
