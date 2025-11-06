@@ -119,10 +119,7 @@ class _AccountScreenState extends State<AccountScreen> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15),
-                      borderSide: BorderSide(
-                        color: AppColors.maroon,
-                        width: 2,
-                      ),
+                      borderSide: BorderSide(color: AppColors.maroon, width: 2),
                     ),
                   ),
                 ),
@@ -165,10 +162,7 @@ class _AccountScreenState extends State<AccountScreen> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15),
-                      borderSide: BorderSide(
-                        color: AppColors.maroon,
-                        width: 2,
-                      ),
+                      borderSide: BorderSide(color: AppColors.maroon, width: 2),
                     ),
                   ),
                 ),
@@ -183,7 +177,10 @@ class _AccountScreenState extends State<AccountScreen> {
                     labelStyle: AppText.bodyWhite.copyWith(
                       color: AppColors.maroon.withOpacity(0.7),
                     ),
-                    prefixIcon: Icon(Icons.lock_outline, color: AppColors.maroon),
+                    prefixIcon: Icon(
+                      Icons.lock_outline,
+                      color: AppColors.maroon,
+                    ),
                     suffixIcon: IconButton(
                       icon: Icon(
                         obscureConfirmPassword
@@ -211,10 +208,7 @@ class _AccountScreenState extends State<AccountScreen> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15),
-                      borderSide: BorderSide(
-                        color: AppColors.maroon,
-                        width: 2,
-                      ),
+                      borderSide: BorderSide(color: AppColors.maroon, width: 2),
                     ),
                   ),
                 ),
@@ -278,14 +272,46 @@ class _AccountScreenState extends State<AccountScreen> {
                 }
 
                 Navigator.pop(context);
-                
-                // TODO: Implement API call untuk update profile
-                // Contoh:
-                // await _apiService.updateProfile(
-                //   name: usernameController.text,
-                //   password: passwordController.text.isEmpty ? null : passwordController.text,
-                // );
 
+                // Ganti bagian TODO dengan:
+                try {
+                  final result = await _apiService.updateProfile(
+                    name: usernameController.text,
+                    password: passwordController.text.isEmpty
+                        ? null
+                        : passwordController.text,
+                    passwordConfirmation: confirmPasswordController.text.isEmpty
+                        ? null
+                        : confirmPasswordController.text,
+                  );
+
+                  if (result['success'] == true) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Profil berhasil diperbarui'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                    // Reload profile
+                    _loadProfile();
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          result['message'] ?? 'Gagal memperbarui profil',
+                        ),
+                        backgroundColor: AppColors.red,
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error: $e'),
+                      backgroundColor: AppColors.red,
+                    ),
+                  );
+                }
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text('Profil berhasil diperbarui'),
@@ -308,9 +334,7 @@ class _AccountScreenState extends State<AccountScreen> {
               ),
               child: Text(
                 'Simpan',
-                style: AppText.bodyWhite.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: AppText.bodyWhite.copyWith(fontWeight: FontWeight.bold),
               ),
             ),
           ],
@@ -324,9 +348,7 @@ class _AccountScreenState extends State<AccountScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.lightGrey,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
           'Konfirmasi Logout',
           style: AppText.heading.copyWith(
@@ -362,9 +384,7 @@ class _AccountScreenState extends State<AccountScreen> {
             ),
             child: Text(
               'Logout',
-              style: AppText.bodyWhite.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: AppText.bodyWhite.copyWith(fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -467,10 +487,7 @@ class _AccountScreenState extends State<AccountScreen> {
                 height: 120,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: AppColors.white,
-                    width: 3,
-                  ),
+                  border: Border.all(color: AppColors.white, width: 3),
                   boxShadow: [
                     BoxShadow(
                       color: AppColors.white.withOpacity(0.3),
@@ -689,7 +706,11 @@ class _AccountScreenState extends State<AccountScreen> {
         children: [
           _buildStatItem('assets/icons/coin.png', '${_user!.coins}', 'Coin'),
           Container(width: 1, height: 50, color: AppColors.gold),
-          _buildStatItem('assets/icons/poin.png', _user!.formattedScore, 'Poin'),
+          _buildStatItem(
+            'assets/icons/poin.png',
+            _user!.formattedScore,
+            'Poin',
+          ),
         ],
       ),
     );

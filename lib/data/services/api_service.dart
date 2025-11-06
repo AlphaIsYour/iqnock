@@ -97,6 +97,42 @@ class ApiService {
     }
   }
 
+  Future<Map<String, dynamic>> updateProfile({
+    required String name,
+    String? password,
+    String? passwordConfirmation,
+  }) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+
+      if (token == null) {
+        return {'success': false, 'message': 'Token not found'};
+      }
+
+      final body = {'name': name};
+
+      if (password != null && password.isNotEmpty) {
+        body['password'] = password;
+        body['password_confirmation'] = passwordConfirmation ?? password;
+      }
+
+      final response = await http.put(
+        Uri.parse('$baseUrl/profile/update'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(body),
+      );
+
+      return jsonDecode(response.body);
+    } catch (e) {
+      return {'success': false, 'message': 'Error: $e'};
+    }
+  }
+
   Future<Map<String, dynamic>> logout() async {
     try {
       final response = await http.post(
