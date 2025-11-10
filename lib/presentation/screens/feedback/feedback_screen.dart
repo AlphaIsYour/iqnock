@@ -71,6 +71,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
 
     try {
       final response = await _apiService.submitQuestion(
+        type: _selectedType,
         username: _usernameController.text.trim(),
         email: _emailController.text.trim(),
         firstWord: _firstWordController.text.trim(),

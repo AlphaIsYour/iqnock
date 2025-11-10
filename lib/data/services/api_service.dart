@@ -294,6 +294,7 @@ class ApiService {
   // === QUESTION SUBMISSION ===
 
   Future<Map<String, dynamic>> submitQuestion({
+    required String type,
     required String username,
     required String email,
     required String firstWord,
@@ -305,6 +306,7 @@ class ApiService {
         Uri.parse('$baseUrl/questions/submit'),
         headers: await _getHeaders(),
         body: jsonEncode({
+          'type': type,
           'username': username,
           'email': email,
           'first_word': firstWord,
