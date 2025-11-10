@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import './audio_manager.dart';
 
 class SettingScreen extends StatefulWidget {
   const SettingScreen({Key? key}) : super(key: key);
@@ -8,8 +9,22 @@ class SettingScreen extends StatefulWidget {
 }
 
 class _SettingScreenState extends State<SettingScreen> {
+  final AudioManager _audioManager = AudioManager();
   double suaraVolume = 0.6;
   double bgmVolume = 0.6;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadVolumes();
+  }
+
+  void _loadVolumes() {
+    setState(() {
+      suaraVolume = _audioManager.sfxVolume;
+      bgmVolume = _audioManager.bgmVolume;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +35,10 @@ class _SettingScreenState extends State<SettingScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.yellow),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            _audioManager.playSFX('klik.mp3'); // TAMBAHKAN SFX
+            Navigator.pop(context);
+          },
         ),
         title: Row(
           children: const [
@@ -41,7 +59,7 @@ class _SettingScreenState extends State<SettingScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // Slider Suara
+            // Slider Suara (SFX)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               decoration: BoxDecoration(
@@ -78,6 +96,11 @@ class _SettingScreenState extends State<SettingScreen> {
                           setState(() {
                             suaraVolume = value;
                           });
+                          _audioManager.setSFXVolume(value);
+                        },
+                        onChangeEnd: (value) {
+                          // Play SFX saat selesai drag slider
+                          _audioManager.playSFX('klik.mp3');
                         },
                       ),
                     ),
@@ -124,6 +147,7 @@ class _SettingScreenState extends State<SettingScreen> {
                           setState(() {
                             bgmVolume = value;
                           });
+                          _audioManager.setBGMVolume(value);
                         },
                       ),
                     ),
@@ -139,6 +163,7 @@ class _SettingScreenState extends State<SettingScreen> {
               height: 60,
               child: ElevatedButton(
                 onPressed: () {
+                  _audioManager.playSFX('klik.mp3'); // TAMBAHKAN SFX
                   Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
@@ -165,7 +190,8 @@ class _SettingScreenState extends State<SettingScreen> {
               height: 60,
               child: ElevatedButton(
                 onPressed: () {
-                  // Aksi simpan
+                  _audioManager.playSFX('klik.mp3'); // TAMBAHKAN SFX
+                  // Volumes already saved in real-time
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Pengaturan disimpan!'),
@@ -201,15 +227,19 @@ class _SettingScreenState extends State<SettingScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _buildNavItem(Icons.home, 'Main Menu', () {
+                  _audioManager.playSFX('klik.mp3'); // TAMBAHKAN SFX
                   Navigator.pushReplacementNamed(context, '/home');
                 }),
                 _buildNavItem(Icons.star, 'Papan Peringkat', () {
+                  _audioManager.playSFX('klik.mp3'); // TAMBAHKAN SFX
                   Navigator.pushReplacementNamed(context, '/leaderboard');
                 }),
                 _buildNavItem(Icons.send, 'Kirim Soal', () {
+                  _audioManager.playSFX('klik.mp3'); // TAMBAHKAN SFX
                   Navigator.pushReplacementNamed(context, '/feedback');
                 }),
                 _buildNavItem(Icons.person, 'Akun', () {
+                  _audioManager.playSFX('klik.mp3'); // TAMBAHKAN SFX
                   Navigator.pushReplacementNamed(context, '/account');
                 }),
               ],

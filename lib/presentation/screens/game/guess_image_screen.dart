@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text.dart';
+import '../settings/audio_manager.dart';
 import '../../../data/services/api_service.dart';
 import '../../../data/models/question_model.dart';
 
@@ -16,6 +17,7 @@ class GuessImageScreen extends StatefulWidget {
 
 class _GuessImageScreenState extends State<GuessImageScreen> {
   final ApiService _apiService = ApiService();
+  final AudioManager _audioManager = AudioManager();
   final TextEditingController _answerController = TextEditingController();
 
   QuestionModel? _question;
@@ -66,7 +68,19 @@ class _GuessImageScreenState extends State<GuessImageScreen> {
   }
 
   Future<void> _useHint() async {
-    if (_hints <= 0 || _question == null) return;
+    if (_hints <= 0 || _question == null) {
+      // Hint habis - tampilkan maskot hehe.png
+      _audioManager.playSFX('klik.mp3');
+      _showMascotNotification(
+        mascotImage: 'assets/maskot/hehe.png',
+        title: 'Hint Habis!',
+        message: 'Kamu tidak memiliki hint lagi',
+        titleColor: AppColors.red,
+      );
+      return;
+    }
+
+    _audioManager.playSFX('klik.mp3');
 
     try {
       final response = await _apiService.useHint(_question!.questionId);
@@ -79,47 +93,204 @@ class _GuessImageScreenState extends State<GuessImageScreen> {
           _currentHint = hintResponse.hint;
         });
 
-        _showHintDialog(hintResponse.hint);
+        _showHintNotification(hintResponse.hint);
       } else {
-        _showErrorSnackBar(response['message'] ?? 'Failed to get hint');
+        _showMascotNotification(
+          mascotImage: 'assets/maskot/confused.png',
+          title: 'Gagal',
+          message: response['message'] ?? 'Failed to get hint',
+          titleColor: AppColors.red,
+        );
       }
     } catch (e) {
-      _showErrorSnackBar('Error: $e');
+      _showMascotNotification(
+        mascotImage: 'assets/maskot/confused.png',
+        title: 'Error',
+        message: 'Error: $e',
+        titleColor: AppColors.red,
+      );
     }
   }
 
-  void _showHintDialog(String hint) {
+  void _showHintNotification(String hint) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        title: Row(
-          children: [
-            Image.asset('assets/icons/bulb.png', width: 32, height: 32),
-            const SizedBox(width: 8),
-            Text('Hint', style: AppText.heading.copyWith(fontSize: 22)),
-          ],
-        ),
-        content: Text(
-          hint,
-          style: AppText.bodyWhite.copyWith(fontSize: 24, letterSpacing: 4),
-          textAlign: TextAlign.center,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('OK', style: AppText.bodyGold),
+      barrierDismissible: true,
+      barrierColor: Colors.black54,
+      builder: (context) => Center(
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 32),
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppColors.gold, width: 3),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 10,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Maskot confused.png di dalam card
+                Image.asset(
+                  'assets/maskot/confused.png',
+                  width: 100,
+                  height: 100,
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset('assets/icons/bulb.png', width: 28, height: 28),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Hint',
+                      style: AppText.heading.copyWith(
+                        fontSize: 24,
+                        color: AppColors.gold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  hint,
+                  style: AppText.bodyWhite.copyWith(
+                    fontSize: 28,
+                    letterSpacing: 6,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      _audioManager.playSFX('klik.mp3');
+                      Navigator.pop(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.maroon,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      'OK',
+                      style: AppText.bodyGold.copyWith(fontSize: 18),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ],
+        ),
+      ),
+    );
+  }
+
+  void _showMascotNotification({
+    required String mascotImage,
+    required String title,
+    required String message,
+    Color titleColor = AppColors.gold,
+    VoidCallback? onPressed,
+    String buttonText = 'OK',
+  }) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black54,
+      builder: (context) => Center(
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 32),
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppColors.gold, width: 3),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 10,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Maskot di dalam card
+                Image.asset(mascotImage, width: 100, height: 100),
+                const SizedBox(height: 16),
+                Text(
+                  title,
+                  style: AppText.heading.copyWith(
+                    fontSize: 24,
+                    color: titleColor,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  message,
+                  style: AppText.bodyWhite.copyWith(fontSize: 18),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed:
+                        onPressed ??
+                        () {
+                          _audioManager.playSFX('klik.mp3');
+                          Navigator.pop(context);
+                        },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.maroon,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      buttonText,
+                      style: AppText.bodyGold.copyWith(fontSize: 18),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
 
   Future<void> _checkAnswer() async {
     if (_answerController.text.trim().isEmpty || _question == null) {
-      _showErrorSnackBar('Jawaban tidak boleh kosong');
+      _showMascotNotification(
+        mascotImage: 'assets/maskot/confused.png',
+        title: 'Peringatan',
+        message: 'Jawaban tidak boleh kosong',
+        titleColor: AppColors.red,
+      );
       return;
     }
+
+    _audioManager.playSFX('klik.mp3');
 
     setState(() {
       _isSubmitting = true;
@@ -138,7 +309,9 @@ class _GuessImageScreenState extends State<GuessImageScreen> {
       });
 
       if (answerResponse.isCorrect) {
-        _showSuccessDialog(answerResponse);
+        // Play suara benar LANGSUNG tanpa delay
+        _audioManager.playSFX('benar.mp3');
+        _showSuccessNotification(answerResponse);
       } else {
         _handleWrongAnswer(answerResponse);
       }
@@ -146,88 +319,201 @@ class _GuessImageScreenState extends State<GuessImageScreen> {
       setState(() {
         _isSubmitting = false;
       });
-      _showErrorSnackBar('Error: $e');
+      _showMascotNotification(
+        mascotImage: 'assets/maskot/confused.png',
+        title: 'Error',
+        message: 'Error: $e',
+        titleColor: AppColors.red,
+      );
     }
   }
 
-  void _showSuccessDialog(AnswerResponse response) {
+  void _showSuccessNotification(AnswerResponse response) {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        title: Text('🎉 Benar!', style: AppText.heading),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Jawaban kamu benar!',
-              style: AppText.bodyWhite.copyWith(fontSize: 18),
+      barrierColor: Colors.black54,
+      builder: (context) => Center(
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 32),
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppColors.gold, width: 3),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 10,
+                  offset: const Offset(0, 5),
+                ),
+              ],
             ),
-            SizedBox(height: 16),
-            Text(
-              '+${response.pointsEarned} poin',
-              style: AppText.bodyGold.copyWith(fontSize: 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Maskot happy.png di dalam card
+                Image.asset('assets/maskot/happy.png', width: 100, height: 100),
+                const SizedBox(height: 12),
+                Text(
+                  'Jawaban kamu benar!',
+                  style: AppText.bodyWhite.copyWith(fontSize: 18),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.maroon,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '+${response.pointsEarned} poin',
+                    style: AppText.bodyGold.copyWith(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                if (response.coins != null) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    'Total Koin: ${response.coins}',
+                    style: AppText.bodyWhite.copyWith(fontSize: 16),
+                  ),
+                ],
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      _audioManager.playSFX('klik.mp3');
+                      Navigator.pop(context);
+                      Navigator.pop(context, true);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.maroon,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      'LANJUT',
+                      style: AppText.bodyGold.copyWith(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-            if (response.coins != null)
-              Text(
-                'Total Koin: ${response.coins}',
-                style: AppText.bodyWhite.copyWith(fontSize: 16),
-              ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context); // Close dialog
-              Navigator.pop(context, true); // Back to game screen & refresh
-            },
-            child: Text('LANJUT', style: AppText.bodyGold),
           ),
-        ],
+        ),
       ),
     );
   }
 
   void _handleWrongAnswer(AnswerResponse response) {
+    // Play suara salah
+    _audioManager.playSFX('salah.mp3');
+
     setState(() {
       _hearts = response.hearts ?? 0;
     });
 
     if (response.gameOver == true) {
-      _showGameOverDialog();
+      // Play game over sound
+      _audioManager.playSFX('nyawa-habis.mp3');
+      _showGameOverNotification();
     } else {
-      _showErrorSnackBar('Salah! Sisa nyawa: $_hearts');
+      // Jawaban salah tapi masih punya nyawa - maskot confused.png
+      _showMascotNotification(
+        mascotImage: 'assets/maskot/confused.png',
+        title: 'Salah!',
+        message: 'Jawaban kurang tepat\nSisa nyawa: $_hearts ❤️',
+        titleColor: AppColors.red,
+      );
     }
   }
 
-  void _showGameOverDialog() {
+  void _showGameOverNotification() {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        title: Text('💔 Game Over', style: AppText.heading),
-        content: Text(
-          'Nyawa habis! Level akan direset ke 1.',
-          style: AppText.bodyWhite.copyWith(fontSize: 18),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context); // Close dialog
-              Navigator.pop(context, true); // Back to game screen
-            },
-            child: Text('OK', style: AppText.bodyGold),
+      barrierColor: Colors.black54,
+      builder: (context) => Center(
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 32),
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppColors.red, width: 3),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 10,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Maskot cary.png di dalam card
+                Image.asset('assets/maskot/cry.png', width: 100, height: 100),
+                const SizedBox(height: 16),
+                Text(
+                  '💔 Game Over',
+                  style: AppText.heading.copyWith(
+                    fontSize: 28,
+                    color: AppColors.red,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Nyawa habis!\nLevel akan direset ke 1.',
+                  style: AppText.bodyWhite.copyWith(fontSize: 18),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      _audioManager.playSFX('klik.mp3');
+                      Navigator.pop(context);
+                      Navigator.pop(context, true);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.red,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      'OK',
+                      style: AppText.bodyWhite.copyWith(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ],
+        ),
       ),
-    );
-  }
-
-  void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: AppColors.error),
     );
   }
 
@@ -242,10 +528,8 @@ class _GuessImageScreenState extends State<GuessImageScreen> {
       );
     }
 
-    // Check if it's base64 data
     if (_question!.imageUrl.startsWith('data:image')) {
       try {
-        // Extract base64 string after comma
         final base64String = _question!.imageUrl.split(',')[1];
         final bytes = base64Decode(base64String);
 
@@ -279,7 +563,6 @@ class _GuessImageScreenState extends State<GuessImageScreen> {
       }
     }
 
-    // Fallback to network image
     return Image.network(
       _question!.imageUrl,
       fit: BoxFit.cover,
@@ -335,7 +618,10 @@ class _GuessImageScreenState extends State<GuessImageScreen> {
               ),
               SizedBox(height: 16),
               ElevatedButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () {
+                  _audioManager.playSFX('klik.mp3');
+                  Navigator.pop(context);
+                },
                 child: Text('Kembali'),
               ),
             ],
@@ -350,7 +636,10 @@ class _GuessImageScreenState extends State<GuessImageScreen> {
         backgroundColor: AppColors.maroon,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.gold),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            _audioManager.playSFX('klik.mp3');
+            Navigator.pop(context);
+          },
         ),
         title: Row(
           children: [
@@ -391,14 +680,13 @@ class _GuessImageScreenState extends State<GuessImageScreen> {
       body: Column(
         children: [
           const SizedBox(height: 20),
-          // Hint & Share buttons
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton.icon(
-                  onPressed: _hints > 0 ? _useHint : null,
+                  onPressed: _useHint,
                   icon: Image.asset(
                     'assets/icons/bulb.png',
                     width: 20,
@@ -410,7 +698,6 @@ class _GuessImageScreenState extends State<GuessImageScreen> {
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.maroon,
-                    disabledBackgroundColor: AppColors.maroon.withOpacity(0.5),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 20,
                       vertical: 12,
@@ -419,6 +706,7 @@ class _GuessImageScreenState extends State<GuessImageScreen> {
                 ),
                 ElevatedButton.icon(
                   onPressed: () {
+                    _audioManager.playSFX('klik.mp3');
                     // TODO: Share functionality
                   },
                   icon: const Icon(Icons.share, color: AppColors.white),
@@ -438,7 +726,6 @@ class _GuessImageScreenState extends State<GuessImageScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          // Image dari API
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 16),
             height: 300,
@@ -454,7 +741,6 @@ class _GuessImageScreenState extends State<GuessImageScreen> {
             ),
           ),
           const Spacer(),
-          // Input & Button area
           Container(
             padding: const EdgeInsets.all(20),
             decoration: const BoxDecoration(

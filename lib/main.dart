@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'core/constants/app_colors.dart';
+import 'presentation/screens/settings/audio_manager.dart';
 import 'routes/app_routes.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize audio
+  await AudioManager().init();
+
   runApp(const IqnockApp());
 }
 

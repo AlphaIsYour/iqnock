@@ -3,6 +3,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text.dart';
 import '../../../data/services/api_service.dart';
 import '../../../data/models/level_model.dart';
+import '../settings/audio_manager.dart'; // TAMBAHKAN INI
 import '../game/game_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -14,6 +15,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final ApiService _apiService = ApiService();
+  final AudioManager _audioManager = AudioManager(); // TAMBAHKAN INI
 
   List<LevelModel> _levels = [];
   UserStats? _userStats;
@@ -60,6 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _navigateToGame(int levelNumber) async {
+    _audioManager.playSFX('klik.mp3'); // TAMBAHKAN SFX
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -87,6 +90,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Image.asset('assets/logo/iqnock.png', height: 40),
             GestureDetector(
               onTap: () async {
+                _audioManager.playSFX('klik.mp3'); // TAMBAHKAN SFX
                 await Navigator.pushNamed(context, '/setting');
               },
               child: Container(
@@ -172,7 +176,10 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: _loadLevels,
+              onPressed: () {
+                _audioManager.playSFX('klik.mp3'); // TAMBAHKAN SFX
+                _loadLevels();
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.maroon,
                 foregroundColor: AppColors.gold,
@@ -317,7 +324,10 @@ class _HomeScreenState extends State<HomeScreen> {
             ElevatedButton(
               onPressed: isUnlocked
                   ? () => _navigateToGame(startLevelNumber)
-                  : null,
+                  : () {
+                      // Play sound untuk locked level
+                      _audioManager.playSFX('klik.mp3');
+                    },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.gold,
                 foregroundColor: AppColors.maroon,
@@ -417,6 +427,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ],
       onTap: (index) async {
+        _audioManager.playSFX('klik.mp3'); // TAMBAHKAN SFX DI SEMUA TAP
         switch (index) {
           case 0:
             // Already on home

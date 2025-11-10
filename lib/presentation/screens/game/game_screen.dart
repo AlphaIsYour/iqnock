@@ -3,6 +3,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text.dart';
 import '../../../data/services/api_service.dart';
 import '../../../data/models/level_model.dart';
+import '../settings/audio_manager.dart'; // TAMBAHKAN INI
 import 'guess_image_screen.dart';
 
 class GameScreen extends StatefulWidget {
@@ -16,6 +17,7 @@ class GameScreen extends StatefulWidget {
 
 class _GameScreenState extends State<GameScreen> {
   final ApiService _apiService = ApiService();
+  final AudioManager _audioManager = AudioManager(); // TAMBAHKAN INI
 
   List<LevelModel> _levels = [];
   UserStats? _userStats;
@@ -91,7 +93,13 @@ class _GameScreenState extends State<GameScreen> {
               SizedBox(height: 16),
               Text(_errorMessage!, style: AppText.bodyWhite),
               SizedBox(height: 16),
-              ElevatedButton(onPressed: _loadLevels, child: Text('Retry')),
+              ElevatedButton(
+                onPressed: () {
+                  _audioManager.playSFX('klik.mp3'); // TAMBAHKAN SFX
+                  _loadLevels();
+                },
+                child: Text('Retry'),
+              ),
             ],
           ),
         ),
@@ -108,7 +116,10 @@ class _GameScreenState extends State<GameScreen> {
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.gold),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            _audioManager.playSFX('klik.mp3'); // TAMBAHKAN SFX
+            Navigator.pop(context);
+          },
         ),
         title: Text("Level $groupStart-$groupEnd", style: AppText.heading),
         actions: [
@@ -156,6 +167,7 @@ class _GameScreenState extends State<GameScreen> {
             return GestureDetector(
               onTap: level.isUnlocked
                   ? () async {
+                      _audioManager.playSFX('klik.mp3'); // TAMBAHKAN SFX
                       final result = await Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -169,7 +181,10 @@ class _GameScreenState extends State<GameScreen> {
                         _loadLevels();
                       }
                     }
-                  : null,
+                  : () {
+                      // Play sound berbeda untuk locked level (optional)
+                      _audioManager.playSFX('klik.mp3');
+                    },
               child: Container(
                 decoration: BoxDecoration(
                   color: level.isUnlocked ? AppColors.red : AppColors.maroon,
