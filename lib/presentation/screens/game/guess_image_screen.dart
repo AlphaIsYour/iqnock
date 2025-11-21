@@ -394,6 +394,24 @@ class _GuessImageScreenState extends State<GuessImageScreen> {
                       _audioManager.playSFX('klik.mp3');
                       Navigator.pop(context);
                       Navigator.pop(context, true);
+                     
+                    // Cek apakah level terakhir dalam grup (10, 20, 30, dst)
+                      final isLastInGroup = widget.levelNumber % 10 == 0;
+
+                      if (isLastInGroup) {
+                        // Kembali ke home screen (2x pop karena ada dialog + guess screen)
+                        Navigator.pop(context, true);
+                      } else {
+                        // Lanjut ke level berikutnya
+                        final nextLevel = widget.levelNumber + 1;
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                GuessImageScreen(levelNumber: nextLevel),
+                          ),
+                        );
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.maroon,

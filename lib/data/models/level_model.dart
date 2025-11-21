@@ -3,8 +3,8 @@ class LevelModel {
   final int levelNumber;
   final String levelName;
   final bool isPremium;
-  final int? coinPrice;
-  final int? rewardCoins;
+  final int coinPrice;
+  final int rewardCoins;
   final bool isUnlocked;
   final bool isCompleted;
 
@@ -13,20 +13,23 @@ class LevelModel {
     required this.levelNumber,
     required this.levelName,
     required this.isPremium,
-    this.coinPrice,
-    this.rewardCoins,
+    required this.coinPrice,
+    required this.rewardCoins,
     required this.isUnlocked,
     required this.isCompleted,
   });
 
+  // Untuk level premium, is_unlocked berarti sudah dibeli
+  bool get isPurchased => isPremium ? isUnlocked : true;
+
   factory LevelModel.fromJson(Map<String, dynamic> json) {
     return LevelModel(
-      id: json['id'],
-      levelNumber: json['level_number'],
-      levelName: json['level_name'],
+      id: json['id'] ?? 0,
+      levelNumber: json['level_number'] ?? 0,
+      levelName: json['level_name'] ?? '',
       isPremium: json['is_premium'] ?? false,
-      coinPrice: json['coin_price'],
-      rewardCoins: json['reward_coins'],
+      coinPrice: json['coin_price'] ?? 0,
+      rewardCoins: json['reward_coins'] ?? 0,
       isUnlocked: json['is_unlocked'] ?? false,
       isCompleted: json['is_completed'] ?? false,
     );

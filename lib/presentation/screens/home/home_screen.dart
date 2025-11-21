@@ -3,7 +3,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text.dart';
 import '../../../data/services/api_service.dart';
 import '../../../data/models/level_model.dart';
-import '../settings/audio_manager.dart'; // TAMBAHKAN INI
+import '../settings/audio_manager.dart';
 import '../game/game_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -15,7 +15,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final ApiService _apiService = ApiService();
-  final AudioManager _audioManager = AudioManager(); // TAMBAHKAN INI
+  final AudioManager _audioManager = AudioManager();
 
   List<LevelModel> _levels = [];
   UserStats? _userStats;
@@ -62,7 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _navigateToGame(int levelNumber) async {
-    _audioManager.playSFX('klik.mp3'); // TAMBAHKAN SFX
+    _audioManager.playSFX('klik.mp3');
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -70,9 +70,159 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
 
-    // Refresh data setelah kembali dari game screen
     if (result == true) {
       _loadLevels();
+    }
+  }
+
+  Future<void> _unlockPremiumLevel(int levelNumber) async {
+    _audioManager.playSFX('klik.mp3');
+
+    // Confirm dialog
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.maroon,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        title: Text(
+          'Beli Level?',
+          style: AppText.bodyGold.copyWith(fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+          'Kamu akan membeli level ini dengan 80 coin. level dalam grup ini akan terbuka.',
+          style: AppText.bodyWhite,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Batal', style: AppText.bodyGold),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.gold,
+              foregroundColor: AppColors.maroon,
+            ),
+            child: Text(
+              'Beli (80 Coin)',
+              style: AppText.bodyWhite.copyWith(
+                color: AppColors.maroon,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    // Show loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) =>
+          Center(child: CircularProgressIndicator(color: AppColors.gold)),
+    );
+
+    try {
+      final response = await _apiService.unlockPremiumLevel(levelNumber);
+      Navigator.pop(context); // Close loading
+
+      if (response['success'] == true) {
+        _audioManager.playSFX('klik.mp3');
+        await _loadLevels();
+
+        // Show success dialog
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            backgroundColor: AppColors.maroon,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+            title: Row(
+              children: [
+                Icon(Icons.check_circle, color: AppColors.gold, size: 32),
+                const SizedBox(width: 10),
+                Text(
+                  'Berhasil!',
+                  style: AppText.bodyGold.copyWith(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            content: Text(
+              response['message'] ?? 'Level berhasil dibuka!',
+              style: AppText.bodyWhite,
+            ),
+            actions: [
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.gold,
+                  foregroundColor: AppColors.maroon,
+                ),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      } else {
+        // Show error
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            backgroundColor: AppColors.maroon,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+            title: Row(
+              children: [
+                Icon(Icons.error_outline, color: AppColors.red, size: 32),
+                const SizedBox(width: 10),
+                Text(
+                  'Gagal',
+                  style: AppText.bodyGold.copyWith(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            content: Text(
+              response['message'] ?? 'Gagal membeli level',
+              style: AppText.bodyWhite,
+            ),
+            actions: [
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.gold,
+                  foregroundColor: AppColors.maroon,
+                ),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      Navigator.pop(context); // Close loading
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          backgroundColor: AppColors.maroon,
+          title: Text('Error', style: AppText.bodyGold),
+          content: Text('Terjadi kesalahan: $e', style: AppText.bodyWhite),
+          actions: [
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.gold,
+                foregroundColor: AppColors.maroon,
+              ),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
     }
   }
 
@@ -90,7 +240,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Image.asset('assets/logo/iqnock.png', height: 40),
             GestureDetector(
               onTap: () async {
-                _audioManager.playSFX('klik.mp3'); // TAMBAHKAN SFX
+                _audioManager.playSFX('klik.mp3');
                 await Navigator.pushNamed(context, '/setting');
               },
               child: Container(
@@ -107,7 +257,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Column(
         children: [
-          // Total Poin Section
           Container(
             width: double.infinity,
             color: AppColors.maroon,
@@ -141,7 +290,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
-          // Level List
           Expanded(child: _buildContent()),
         ],
       ),
@@ -177,7 +325,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
-                _audioManager.playSFX('klik.mp3'); // TAMBAHKAN SFX
+                _audioManager.playSFX('klik.mp3');
                 _loadLevels();
               },
               style: ElevatedButton.styleFrom(
@@ -214,7 +362,7 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
-    // Group levels by 10s (1-10, 11-20, etc)
+    // Group levels by 10s
     Map<String, List<LevelModel>> groupedLevels = {};
     for (var level in _levels) {
       int groupStart = ((level.levelNumber - 1) ~/ 10) * 10 + 1;
@@ -236,13 +384,15 @@ class _HomeScreenState extends State<HomeScreen> {
           String groupName = entry.key;
           List<LevelModel> levelsInGroup = entry.value;
 
-          // Check if any level in group is unlocked
-          bool hasUnlockedLevel = levelsInGroup.any((l) => l.isUnlocked);
-
-          // Get first level in group
           LevelModel firstLevel = levelsInGroup.first;
+          bool isPremiumGroup = firstLevel.isPremium;
 
-          // Count completed levels in group
+          // Cek apakah grup premium sudah dibeli (level pertama grup sudah unlock)
+          bool isGroupPurchased = firstLevel.isUnlocked;
+
+          // Cek apakah ada level yang bisa dimainkan di grup ini
+          bool hasPlayableLevel = levelsInGroup.any((l) => l.isUnlocked);
+
           int completedCount = levelsInGroup.where((l) => l.isCompleted).length;
 
           return Padding(
@@ -250,7 +400,9 @@ class _HomeScreenState extends State<HomeScreen> {
             child: _buildLevelCard(
               context,
               groupName,
-              hasUnlockedLevel,
+              isPremiumGroup,
+              isGroupPurchased,
+              hasPlayableLevel,
               firstLevel.levelNumber,
               completedCount,
               levelsInGroup.length,
@@ -264,11 +416,35 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildLevelCard(
     BuildContext context,
     String levelName,
-    bool isUnlocked,
+    bool isPremiumGroup,
+    bool isPurchased,
+    bool canPlay,
     int startLevelNumber,
     int completedCount,
     int totalCount,
   ) {
+    // Tentukan status tombol
+    String buttonText;
+    VoidCallback? onPressed;
+    bool isEnabled = true;
+
+    if (isPremiumGroup && !isPurchased) {
+      // Premium belum dibeli
+      buttonText = 'Beli (80 Coin)';
+      onPressed = () => _unlockPremiumLevel(startLevelNumber);
+      isEnabled = (_userStats?.coins ?? 0) >= 80;
+    } else if (!canPlay) {
+      // Level terkunci
+      buttonText = 'Terkunci';
+      onPressed = null;
+      isEnabled = false;
+    } else {
+      // Level sudah bisa dimainkan
+      buttonText = 'Mulai';
+      onPressed = () => _navigateToGame(startLevelNumber);
+      isEnabled = true;
+    }
+
     return Container(
       decoration: BoxDecoration(
         color: AppColors.red,
@@ -298,7 +474,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      if (!isUnlocked)
+                      if (!canPlay && !isPremiumGroup)
                         Padding(
                           padding: const EdgeInsets.only(left: 8),
                           child: Icon(
@@ -309,7 +485,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                     ],
                   ),
-                  if (isUnlocked && completedCount > 0)
+                  if (isPurchased && completedCount > 0)
                     Padding(
                       padding: const EdgeInsets.only(top: 4),
                       child: Text(
@@ -317,24 +493,43 @@ class _HomeScreenState extends State<HomeScreen> {
                         style: AppText.bodyGold.copyWith(fontSize: 12),
                       ),
                     ),
+                  if (isPremiumGroup && !isPurchased)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.monetization_on,
+                            color: AppColors.gold,
+                            size: 14,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Harga: 80 Coin',
+                            style: AppText.bodyGold.copyWith(fontSize: 11),
+                          ),
+                        ],
+                      ),
+                    ),
                 ],
               ),
             ),
             const SizedBox(width: 12),
             ElevatedButton(
-              onPressed: isUnlocked
-                  ? () => _navigateToGame(startLevelNumber)
+              onPressed: isEnabled
+                  ? onPressed
                   : () {
-                      // Play sound untuk locked level
                       _audioManager.playSFX('klik.mp3');
                     },
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.gold,
-                foregroundColor: AppColors.maroon,
-                disabledBackgroundColor: AppColors.gold.withOpacity(0.5),
-                disabledForegroundColor: AppColors.maroon.withOpacity(0.5),
+                backgroundColor: isEnabled
+                    ? AppColors.gold
+                    : AppColors.gold.withOpacity(0.5),
+                foregroundColor: isEnabled
+                    ? AppColors.maroon
+                    : AppColors.maroon.withOpacity(0.5),
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 30,
+                  horizontal: 24,
                   vertical: 12,
                 ),
                 shape: RoundedRectangleBorder(
@@ -342,11 +537,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               child: Text(
-                isUnlocked ? 'Mulai' : 'Terkunci',
+                buttonText,
                 style: AppText.bodyWhite.copyWith(
                   fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                  color: isUnlocked
+                  fontSize: 13,
+                  color: isEnabled
                       ? AppColors.maroon
                       : AppColors.maroon.withOpacity(0.5),
                 ),
@@ -427,14 +622,12 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ],
       onTap: (index) async {
-        _audioManager.playSFX('klik.mp3'); // TAMBAHKAN SFX DI SEMUA TAP
+        _audioManager.playSFX('klik.mp3');
         switch (index) {
           case 0:
-            // Already on home
             break;
           case 1:
             await Navigator.pushNamed(context, '/leaderboard');
-            // Refresh data setelah kembali
             _loadLevels();
             break;
           case 2:
