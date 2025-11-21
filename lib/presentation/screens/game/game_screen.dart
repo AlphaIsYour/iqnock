@@ -3,11 +3,11 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text.dart';
 import '../../../data/services/api_service.dart';
 import '../../../data/models/level_model.dart';
-import '../settings/audio_manager.dart'; // TAMBAHKAN INI
+import '../settings/audio_manager.dart';
 import 'guess_image_screen.dart';
 
 class GameScreen extends StatefulWidget {
-  final int startLevelNumber; // Level number dari home_screen
+  final int startLevelNumber;
 
   const GameScreen({super.key, required this.startLevelNumber});
 
@@ -17,12 +17,14 @@ class GameScreen extends StatefulWidget {
 
 class _GameScreenState extends State<GameScreen> {
   final ApiService _apiService = ApiService();
-  final AudioManager _audioManager = AudioManager(); // TAMBAHKAN INI
+  final AudioManager _audioManager = AudioManager();
 
   List<LevelModel> _levels = [];
   UserStats? _userStats;
   bool _isLoading = true;
   String? _errorMessage;
+
+  bool _isCheckingReset = false;
 
   @override
   void initState() {
@@ -31,19 +33,49 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   Future<void> _loadLevels() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
+    if (_isCheckingReset) return;
+
+    if (_levels.isEmpty) {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+    }
 
     try {
       final response = await _apiService.getLevels();
 
       if (response['success'] == true) {
         final data = response['data'];
+        final newUserStats = UserStats.fromJson(data['user_stats']);
+
+        // --- LOGIKA DETEKSI DAN TRIGGER RESET ---
+        if (newUserStats.hearts == 0) {
+          int groupStart = ((widget.startLevelNumber - 1) ~/ 10) * 10 + 1;
+          int groupEnd = groupStart + 9;
+
+          final allLevels = (data['levels'] as List)
+              .map((json) => LevelModel.fromJson(json))
+              .toList();
+
+          // Reset dipicu jika nyawa 0 DAN ada level manapun
+          // di grup ini yang statusnya unlocked atau completed.
+          bool hasActiveProgressInGroup = allLevels.any(
+            (level) =>
+                level.levelNumber >= groupStart &&
+                level.levelNumber <= groupEnd &&
+                (level.isUnlocked || level.isCompleted),
+          );
+
+          if (hasActiveProgressInGroup) {
+            _isCheckingReset = true;
+            await _resetGroupLevels(groupStart, groupEnd);
+            return;
+          }
+        }
+        // ----------------------------------------------------
 
         setState(() {
-          // Filter levels berdasarkan group (1-10, 11-20, dst)
           int groupStart = ((widget.startLevelNumber - 1) ~/ 10) * 10 + 1;
           int groupEnd = groupStart + 9;
 
@@ -56,7 +88,7 @@ class _GameScreenState extends State<GameScreen> {
               )
               .toList();
 
-          _userStats = UserStats.fromJson(data['user_stats']);
+          _userStats = newUserStats;
           _isLoading = false;
         });
       } else {
@@ -70,6 +102,61 @@ class _GameScreenState extends State<GameScreen> {
         _errorMessage = 'Error: $e';
         _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _resetGroupLevels(int groupStart, int groupEnd) async {
+    try {
+      await _apiService.resetGroupLevels(
+        groupStart: groupStart,
+        groupEnd: groupEnd,
+      );
+
+      if (mounted) {
+        await showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => AlertDialog(
+            backgroundColor: AppColors.maroon,
+            title: Text(
+              '💔 Nyawa Habis!',
+              style: AppText.heading,
+              textAlign: TextAlign.center,
+            ),
+            content: Text(
+              'Progress level $groupStart-$groupEnd telah direset.\n\n'
+              '❤️ Nyawa: 5\n'
+              '💡 Hint: 5\n\n'
+              'Kamu akan kembali ke Level $groupStart.',
+              style: AppText.bodyWhite,
+              textAlign: TextAlign.center,
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  _audioManager.playSFX('klik.mp3');
+                  Navigator.pop(context);
+                },
+                child: Text('OK', style: AppText.bodyGold),
+              ),
+            ],
+          ),
+        );
+
+        if (mounted) {
+          setState(() {
+            _isCheckingReset = false;
+          });
+          await _loadLevels();
+        }
+      }
+    } catch (e) {
+      print('Error resetting levels: $e');
+      if (mounted) {
+        setState(() {
+          _isCheckingReset = false;
+        });
+      }
     }
   }
 
@@ -95,7 +182,7 @@ class _GameScreenState extends State<GameScreen> {
               SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () {
-                  _audioManager.playSFX('klik.mp3'); // TAMBAHKAN SFX
+                  _audioManager.playSFX('klik.mp3');
                   _loadLevels();
                 },
                 child: Text('Retry'),
@@ -117,7 +204,7 @@ class _GameScreenState extends State<GameScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.gold),
           onPressed: () {
-            _audioManager.playSFX('klik.mp3'); // TAMBAHKAN SFX
+            _audioManager.playSFX('klik.mp3');
             Navigator.pop(context);
           },
         ),
@@ -130,7 +217,7 @@ class _GameScreenState extends State<GameScreen> {
                 Image.asset('assets/icons/heart.png', width: 24, height: 24),
                 const SizedBox(width: 4),
                 Text(
-                  '${_userStats?.hearts ?? 0}',
+                  '${_userStats?.hearts ?? 5}',
                   style: AppText.bodyWhite.copyWith(fontSize: 18),
                 ),
               ],
@@ -143,7 +230,7 @@ class _GameScreenState extends State<GameScreen> {
                 Image.asset('assets/icons/bulb.png', width: 24, height: 24),
                 const SizedBox(width: 4),
                 Text(
-                  '${_userStats?.hints ?? 0}',
+                  '${_userStats?.hints ?? 5}',
                   style: AppText.bodyGold.copyWith(fontSize: 18),
                 ),
               ],
@@ -167,7 +254,9 @@ class _GameScreenState extends State<GameScreen> {
             return GestureDetector(
               onTap: level.isUnlocked
                   ? () async {
-                      _audioManager.playSFX('klik.mp3'); // TAMBAHKAN SFX
+                      _audioManager.playSFX('klik.mp3');
+
+                      // Menggunakan result untuk menangkap sinyal Game Over
                       final result = await Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -176,13 +265,16 @@ class _GameScreenState extends State<GameScreen> {
                         ),
                       );
 
-                      // Refresh levels setelah kembali dari guess screen
+                      // ✨ Pengecekan cepat: Jika result adalah TRUE (Game Over dari GuessScreen),
+                      // panggil _loadLevels untuk memicu reset tanpa delay tambahan.
                       if (result == true) {
+                        await _loadLevels();
+                      } else {
+                        // Refresh levels setelah kembali normal
                         _loadLevels();
                       }
                     }
                   : () {
-                      // Play sound berbeda untuk locked level (optional)
                       _audioManager.playSFX('klik.mp3');
                     },
               child: Container(

@@ -232,6 +232,39 @@ class ApiService {
     }
   }
 
+  // TAMBAHKAN METHOD INI DI SINI ⬇️
+  // Reset levels per grup
+  Future<Map<String, dynamic>> resetGroupLevels({
+    required int groupStart,
+    required int groupEnd,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/levels/reset-group'),
+        headers: await _getHeaders(),
+        body: jsonEncode({'group_start': groupStart, 'group_end': groupEnd}),
+      );
+
+      return _handleResponse(response);
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: $e'};
+    }
+  }
+
+  // Reset semua levels (method lama, tetap ada)
+  Future<Map<String, dynamic>> resetLevelsProgress() async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/levels/reset'),
+        headers: await _getHeaders(),
+      );
+
+      return _handleResponse(response);
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: $e'};
+    }
+  }
+
   // === LEADERBOARD ENDPOINTS ===
 
   Future<Map<String, dynamic>> getLeaderboard() async {
