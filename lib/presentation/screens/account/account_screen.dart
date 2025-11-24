@@ -571,11 +571,9 @@ class _AccountScreenState extends State<AccountScreen> {
                       _rank != null ? '#$_rank' : 'Belum ada',
                     ),
                     const SizedBox(height: 15),
-                    _buildInfoCard('Total Coin', _user!.formattedScore),
-                    const SizedBox(height: 15),
                     _buildInfoCard(
-                      'Level Saat Ini',
-                      'Level ${_user!.currentLevel}',
+                      'Level Tertinggi',
+                      'Level ${_user!.highestLevel}',
                     ),
                     const SizedBox(height: 15),
                     _buildStatRow(),

@@ -6,6 +6,7 @@ class UserModel {
   final int hearts;
   final int hints;
   final int currentLevel;
+  final int highestLevel;
   final int totalScore;
 
   UserModel({
@@ -16,6 +17,7 @@ class UserModel {
     required this.hearts,
     required this.hints,
     required this.currentLevel,
+    required this.highestLevel,
     required this.totalScore,
   });
 
@@ -28,6 +30,7 @@ class UserModel {
       hearts: json['hearts'] ?? 5,
       hints: json['hints'] ?? 5,
       currentLevel: json['current_level'] ?? 1,
+      highestLevel: json['highest_level'] ?? 1,
       totalScore: json['total_score'] ?? 0,
     );
   }

@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   // Base URL Laravel kamu
-  static const String baseUrl = 'http://127.0.0.1:8000/api/v1';
+  static const String baseUrl = 'http://127.0.0.1:8080/api/v1';
 
   // Singleton pattern
   static final ApiService _instance = ApiService._internal();
@@ -232,15 +232,13 @@ class ApiService {
     }
   }
 
-  // TAMBAHKAN METHOD INI DI SINI ⬇️
-  // Reset levels per grup
   Future<Map<String, dynamic>> resetGroupLevels({
     required int groupStart,
     required int groupEnd,
   }) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/levels/reset-group'),
+        Uri.parse('$baseUrl/reset-group-levels'),
         headers: await _getHeaders(),
         body: jsonEncode({'group_start': groupStart, 'group_end': groupEnd}),
       );

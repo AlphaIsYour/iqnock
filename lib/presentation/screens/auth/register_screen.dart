@@ -23,15 +23,67 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _obscureConfirmPassword = true;
   bool _isLoading = false;
 
+  void _showTopNotification(String message, bool isSuccess) {
+    final overlay = Overlay.of(context);
+    final overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        top: MediaQuery.of(context).padding.top + 16,
+        left: 16,
+        right: 16,
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: isSuccess ? Colors.green : Colors.red,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  isSuccess ? Icons.check_circle : Icons.error,
+                  color: Colors.white,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    message,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    overlay.insert(overlayEntry);
+    Future.delayed(const Duration(seconds: 2), () {
+      overlayEntry.remove();
+    });
+  }
+
   Future<void> _handleRegister() async {
-    // Validasi form
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
-    // Cek password match
     if (_passwordController.text != _confirmPasswordController.text) {
-      _showErrorSnackBar('Password dan konfirmasi password tidak cocok');
+      _showTopNotification(
+        'Password dan konfirmasi password tidak cocok',
+        false,
+      );
       return;
     }
 
@@ -50,43 +102,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (response['success'] == true) {
         if (!mounted) return;
 
-        // Tampilkan success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Registrasi berhasil! Silakan login'),
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: 2),
-          ),
-        );
+        _showTopNotification('Registrasi berhasil! Silakan login', true);
 
-        // Redirect ke login screen
-        Navigator.pushReplacementNamed(context, '/login');
+        Future.delayed(const Duration(seconds: 2), () {
+          if (mounted) {
+            Navigator.pushReplacementNamed(context, '/login');
+          }
+        });
       } else {
-        // Handle error dari API
         String errorMessage = response['message'] ?? 'Registrasi gagal';
 
-        // Jika ada validation errors
         if (response['errors'] != null) {
           final errors = response['errors'] as Map<String, dynamic>;
           errorMessage = errors.values.first[0];
         }
 
-        _showErrorSnackBar(errorMessage);
+        _showTopNotification(errorMessage, false);
       }
     } catch (e) {
       setState(() => _isLoading = false);
-      _showErrorSnackBar('Terjadi kesalahan: ${e.toString()}');
+      _showTopNotification('Terjadi kesalahan: ${e.toString()}', false);
     }
-  }
-
-  void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-        duration: const Duration(seconds: 3),
-      ),
-    );
   }
 
   @override
@@ -169,7 +205,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     if (value == null || value.trim().isEmpty) {
                       return 'Email tidak boleh kosong';
                     }
-                    // Simple email validation
                     if (!RegExp(
                       r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
                     ).hasMatch(value)) {
