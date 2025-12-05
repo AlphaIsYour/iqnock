@@ -36,7 +36,7 @@ class _SettingScreenState extends State<SettingScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.yellow),
           onPressed: () {
-            _audioManager.playSFX('klik.mp3'); // TAMBAHKAN SFX
+            _audioManager.playSFX('klik.mp3');
             Navigator.pop(context);
           },
         ),
@@ -99,7 +99,6 @@ class _SettingScreenState extends State<SettingScreen> {
                           _audioManager.setSFXVolume(value);
                         },
                         onChangeEnd: (value) {
-                          // Play SFX saat selesai drag slider
                           _audioManager.playSFX('klik.mp3');
                         },
                       ),
@@ -163,7 +162,7 @@ class _SettingScreenState extends State<SettingScreen> {
               height: 60,
               child: ElevatedButton(
                 onPressed: () {
-                  _audioManager.playSFX('klik.mp3'); // TAMBAHKAN SFX
+                  _audioManager.playSFX('klik.mp3');
                   Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
@@ -190,8 +189,7 @@ class _SettingScreenState extends State<SettingScreen> {
               height: 60,
               child: ElevatedButton(
                 onPressed: () {
-                  _audioManager.playSFX('klik.mp3'); // TAMBAHKAN SFX
-                  // Volumes already saved in real-time
+                  _audioManager.playSFX('klik.mp3');
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Pengaturan disimpan!'),
@@ -218,56 +216,111 @@ class _SettingScreenState extends State<SettingScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(color: Color(0xFF6B1B1B)),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildNavItem(Icons.home, 'Main Menu', () {
-                  _audioManager.playSFX('klik.mp3'); // TAMBAHKAN SFX
-                  Navigator.pushReplacementNamed(context, '/home');
-                }),
-                _buildNavItem(Icons.star, 'Papan Peringkat', () {
-                  _audioManager.playSFX('klik.mp3'); // TAMBAHKAN SFX
-                  Navigator.pushReplacementNamed(context, '/leaderboard');
-                }),
-                _buildNavItem(Icons.send, 'Kirim Soal', () {
-                  _audioManager.playSFX('klik.mp3'); // TAMBAHKAN SFX
-                  Navigator.pushReplacementNamed(context, '/feedback');
-                }),
-                _buildNavItem(Icons.person, 'Akun', () {
-                  _audioManager.playSFX('klik.mp3'); // TAMBAHKAN SFX
-                  Navigator.pushReplacementNamed(context, '/account');
-                }),
-              ],
-            ),
-          ),
-        ),
-      ),
+      bottomNavigationBar: _buildBottomNav(),
     );
   }
 
-  Widget _buildNavItem(IconData icon, String label, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: Colors.yellow, size: 28),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.yellow,
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
+  Widget _buildBottomNav() {
+    const Color maroon = Color(0xFF6B1B1B);
+    const Color gold = Color(0xFFFFD700);
+
+    return BottomNavigationBar(
+      type: BottomNavigationBarType.fixed,
+      backgroundColor: maroon,
+      selectedItemColor: gold,
+      unselectedItemColor: Color.fromRGBO(
+        255,
+        215,
+        0,
+        0.6,
+      ), // gold with opacity
+      selectedLabelStyle: const TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.bold,
+        color: gold,
       ),
+      unselectedLabelStyle: const TextStyle(fontSize: 12, color: gold),
+      currentIndex: 0, // Set ke 0 sebagai default
+      items: [
+        BottomNavigationBarItem(
+          icon: Image.asset(
+            'assets/icons/main_menu.png',
+            width: 20,
+            height: 20,
+            color: gold.withOpacity(0.6),
+          ),
+          activeIcon: Image.asset(
+            'assets/icons/main_menu.png',
+            width: 20,
+            height: 20,
+            color: gold,
+          ),
+          label: "Main Menu",
+        ),
+        BottomNavigationBarItem(
+          icon: Image.asset(
+            'assets/icons/papan_peringkat.png',
+            width: 24,
+            height: 24,
+            color: gold.withOpacity(0.6),
+          ),
+          activeIcon: Image.asset(
+            'assets/icons/papan_peringkat.png',
+            width: 24,
+            height: 24,
+            color: gold,
+          ),
+          label: "Papan Peringkat",
+        ),
+        BottomNavigationBarItem(
+          icon: Image.asset(
+            'assets/icons/kirim_soal.png',
+            width: 22,
+            height: 22,
+            color: gold.withOpacity(0.6),
+          ),
+          activeIcon: Image.asset(
+            'assets/icons/kirim_soal.png',
+            width: 22,
+            height: 22,
+            color: gold,
+          ),
+          label: "Masukan",
+        ),
+        BottomNavigationBarItem(
+          icon: Image.asset(
+            'assets/icons/akun.png',
+            width: 26,
+            height: 26,
+            color: gold.withOpacity(0.6),
+          ),
+          activeIcon: Image.asset(
+            'assets/icons/akun.png',
+            width: 26,
+            height: 26,
+            color: gold,
+          ),
+          label: "Akun",
+        ),
+      ],
+      onTap: (index) async {
+        _audioManager.playSFX('klik.mp3');
+
+        switch (index) {
+          case 0:
+            Navigator.pushReplacementNamed(context, '/home');
+            break;
+          case 1:
+            Navigator.pushReplacementNamed(context, '/leaderboard');
+            break;
+          case 2:
+            await Navigator.pushNamed(context, '/feedback');
+            break;
+          case 3:
+            await Navigator.pushReplacementNamed(context, '/account');
+            break;
+        }
+      },
     );
   }
 }

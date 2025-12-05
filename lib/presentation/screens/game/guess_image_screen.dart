@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text.dart';
 import '../settings/audio_manager.dart';
@@ -69,7 +71,6 @@ class _GuessImageScreenState extends State<GuessImageScreen> {
 
   Future<void> _useHint() async {
     if (_hints <= 0 || _question == null) {
-      // Hint habis - tampilkan maskot hehe.png
       _audioManager.playSFX('klik.mp3');
       _showMascotNotification(
         mascotImage: 'assets/maskot/hehe.png',
@@ -112,6 +113,148 @@ class _GuessImageScreenState extends State<GuessImageScreen> {
     }
   }
 
+  Future<void> _showShareOptions() async {
+    if (_question?.imageUrl == null) {
+      _showMascotNotification(
+        mascotImage: 'assets/maskot/confused.png',
+        title: 'Gagal',
+        message: 'Gambar tidak tersedia untuk dibagikan',
+        titleColor: AppColors.red,
+      );
+      return;
+    }
+
+    _audioManager.playSFX('klik.mp3');
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          'Bagikan ke',
+          style: AppText.heading.copyWith(fontSize: 22, color: AppColors.gold),
+          textAlign: TextAlign.center,
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.chat, color: Colors.green, size: 32),
+              title: Text('WhatsApp', style: AppText.bodyWhite),
+              onTap: () {
+                Navigator.pop(context);
+                _shareToWhatsApp();
+              },
+            ),
+            const Divider(color: AppColors.gold, thickness: 1),
+            ListTile(
+              leading: Icon(
+                Icons.photo_camera,
+                color: Colors.pink[300],
+                size: 32,
+              ),
+              title: Text('Instagram', style: AppText.bodyWhite),
+              onTap: () {
+                Navigator.pop(context);
+                _shareToInstagram();
+              },
+            ),
+            const Divider(color: AppColors.gold, thickness: 1),
+            ListTile(
+              leading: const Icon(Icons.share, color: AppColors.gold, size: 32),
+              title: Text('Lainnya', style: AppText.bodyWhite),
+              onTap: () {
+                Navigator.pop(context);
+                _shareGeneral();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _shareToWhatsApp() async {
+    final shareText =
+        '''
+🎮 Bantu aku menyelesaikan kuis Iqnock ini!
+
+Gambar: ${_question!.imageUrl}
+
+Download aplikasinya dan bermain bersama aku:
+https://drive.google.com/file/d/1GuMz0ggojTbkAM1yNMiCnYgqEJRG-WMB/view?usp=drivesdk
+
+#Iqnock #TebakGambar
+''';
+
+    final whatsappUrl = Uri.parse(
+      'whatsapp://send?text=${Uri.encodeComponent(shareText)}',
+    );
+
+    if (await canLaunchUrl(whatsappUrl)) {
+      await launchUrl(whatsappUrl);
+    } else {
+      _showMascotNotification(
+        mascotImage: 'assets/maskot/confused.png',
+        title: 'Gagal',
+        message: 'WhatsApp tidak terinstall di perangkat ini',
+        titleColor: AppColors.red,
+      );
+    }
+  }
+
+  Future<void> _shareToInstagram() async {
+    // Instagram tidak support direct share via URL, jadi pakai general share
+    final shareText =
+        '''
+🎮 Bantu aku menyelesaikan kuis Iqnock ini!
+
+Lihat gambarnya: ${_question!.imageUrl}
+
+Download aplikasinya dan bermain bersama aku:
+https://drive.google.com/file/d/1GuMz0ggojTbkAM1yNMiCnYgqEJRG-WMB/view?usp=drivesdk
+
+#Iqnock #TebakGambar
+''';
+
+    try {
+      await Share.share(shareText, subject: 'Iqnock - Tebak Gambar Challenge!');
+    } catch (e) {
+      _showMascotNotification(
+        mascotImage: 'assets/maskot/confused.png',
+        title: 'Gagal',
+        message: 'Tidak bisa membagikan ke Instagram',
+        titleColor: AppColors.red,
+      );
+    }
+  }
+
+  Future<void> _shareGeneral() async {
+    final shareText =
+        '''
+🎮 Bantu aku menyelesaikan kuis Iqnock ini!
+
+Gambar: ${_question!.imageUrl}
+
+Download aplikasinya dan bermain bersama aku:
+https://drive.google.com/file/d/1GuMz0ggojTbkAM1yNMiCnYgqEJRG-WMB/view?usp=drivesdk
+
+#Iqnock #TebakGambar
+''';
+
+    try {
+      await Share.share(shareText, subject: 'Iqnock - Tebak Gambar Challenge!');
+    } catch (e) {
+      _showMascotNotification(
+        mascotImage: 'assets/maskot/confused.png',
+        title: 'Gagal',
+        message: 'Gagal membagikan',
+        titleColor: AppColors.red,
+      );
+    }
+  }
+
   void _showHintNotification(String hint) {
     showDialog(
       context: context,
@@ -138,7 +281,6 @@ class _GuessImageScreenState extends State<GuessImageScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Maskot confused.png di dalam card
                 Image.asset(
                   'assets/maskot/confused.png',
                   width: 100,
@@ -231,7 +373,6 @@ class _GuessImageScreenState extends State<GuessImageScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Maskot di dalam card
                 Image.asset(mascotImage, width: 100, height: 100),
                 const SizedBox(height: 16),
                 Text(
@@ -309,7 +450,6 @@ class _GuessImageScreenState extends State<GuessImageScreen> {
       });
 
       if (answerResponse.isCorrect) {
-        // Play suara benar LANGSUNG tanpa delay
         _audioManager.playSFX('benar.mp3');
         _showSuccessNotification(answerResponse);
       } else {
@@ -354,7 +494,6 @@ class _GuessImageScreenState extends State<GuessImageScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Maskot happy.png di dalam card
                 Image.asset('assets/maskot/happy.png', width: 100, height: 100),
                 const SizedBox(height: 12),
                 Text(
@@ -393,16 +532,12 @@ class _GuessImageScreenState extends State<GuessImageScreen> {
                     onPressed: () {
                       _audioManager.playSFX('klik.mp3');
                       Navigator.pop(context);
-                      Navigator.pop(context, true);
-                     
-                    // Cek apakah level terakhir dalam grup (10, 20, 30, dst)
+
                       final isLastInGroup = widget.levelNumber % 10 == 0;
 
                       if (isLastInGroup) {
-                        // Kembali ke home screen (2x pop karena ada dialog + guess screen)
                         Navigator.pop(context, true);
                       } else {
-                        // Lanjut ke level berikutnya
                         final nextLevel = widget.levelNumber + 1;
                         Navigator.pushReplacement(
                           context,
@@ -438,7 +573,6 @@ class _GuessImageScreenState extends State<GuessImageScreen> {
   }
 
   void _handleWrongAnswer(AnswerResponse response) {
-    // Play suara salah
     _audioManager.playSFX('salah.mp3');
 
     setState(() {
@@ -446,11 +580,9 @@ class _GuessImageScreenState extends State<GuessImageScreen> {
     });
 
     if (response.gameOver == true) {
-      // Play game over sound
       _audioManager.playSFX('nyawa-habis.mp3');
       _showGameOverNotification();
     } else {
-      // Jawaban salah tapi masih punya nyawa - maskot confused.png
       _showMascotNotification(
         mascotImage: 'assets/maskot/confused.png',
         title: 'Salah!',
@@ -486,7 +618,6 @@ class _GuessImageScreenState extends State<GuessImageScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Maskot cary.png di dalam card
                 Image.asset('assets/maskot/cry.png', width: 100, height: 100),
                 const SizedBox(height: 16),
                 Text(
@@ -498,7 +629,7 @@ class _GuessImageScreenState extends State<GuessImageScreen> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Nyawa habis!\nLevel akan direset ke 1.',
+                  'Nyawa habis!\nLevel akan direset ke awal grup.',
                   style: AppText.bodyWhite.copyWith(fontSize: 18),
                   textAlign: TextAlign.center,
                 ),
@@ -536,7 +667,7 @@ class _GuessImageScreenState extends State<GuessImageScreen> {
   }
 
   Widget _buildImageWidget() {
-    if (_question?.imageUrl == null) {
+    if (_question?.imageUrl == null || _question!.imageUrl.isEmpty) {
       return Center(
         child: Text(
           '🖼️\nGambar Tebakan',
@@ -546,68 +677,60 @@ class _GuessImageScreenState extends State<GuessImageScreen> {
       );
     }
 
-    if (_question!.imageUrl.startsWith('data:image')) {
+    final imageUrl = _question!.imageUrl;
+
+    if (imageUrl.startsWith('data:image')) {
       try {
-        final base64String = _question!.imageUrl.split(',')[1];
+        final base64String = imageUrl.split(',')[1];
         final bytes = base64Decode(base64String);
 
         return Image.memory(
           bytes,
           fit: BoxFit.cover,
           errorBuilder: (context, error, stackTrace) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.broken_image, size: 48, color: AppColors.gold),
-                  SizedBox(height: 8),
-                  Text('Gambar gagal dimuat', style: AppText.bodyGold),
-                ],
-              ),
-            );
+            return _buildErrorWidget('Gambar gagal dimuat');
           },
         );
       } catch (e) {
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.error_outline, size: 48, color: AppColors.gold),
-              SizedBox(height: 8),
-              Text('Error decode: $e', style: AppText.bodyGold),
-            ],
-          ),
-        );
+        return _buildErrorWidget('Error decode: $e');
       }
     }
 
-    return Image.network(
-      _question!.imageUrl,
-      fit: BoxFit.cover,
-      loadingBuilder: (context, child, loadingProgress) {
-        if (loadingProgress == null) return child;
-        return Center(
-          child: CircularProgressIndicator(
-            value: loadingProgress.expectedTotalBytes != null
-                ? loadingProgress.cumulativeBytesLoaded /
-                      loadingProgress.expectedTotalBytes!
-                : null,
-            color: AppColors.gold,
-          ),
-        );
-      },
-      errorBuilder: (context, error, stackTrace) {
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.broken_image, size: 48, color: AppColors.gold),
-              SizedBox(height: 8),
-              Text('Gambar gagal dimuat', style: AppText.bodyGold),
-            ],
-          ),
-        );
-      },
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      return Image.network(
+        imageUrl,
+        fit: BoxFit.cover,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Center(
+            child: CircularProgressIndicator(
+              value: loadingProgress.expectedTotalBytes != null
+                  ? loadingProgress.cumulativeBytesLoaded /
+                        loadingProgress.expectedTotalBytes!
+                  : null,
+              color: AppColors.gold,
+            ),
+          );
+        },
+        errorBuilder: (context, error, stackTrace) {
+          return _buildErrorWidget('Gambar gagal dimuat dari server');
+        },
+      );
+    }
+
+    return _buildErrorWidget('Format gambar tidak didukung');
+  }
+
+  Widget _buildErrorWidget(String message) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.broken_image, size: 48, color: AppColors.gold),
+          const SizedBox(height: 8),
+          Text(message, style: AppText.bodyGold, textAlign: TextAlign.center),
+        ],
+      ),
     );
   }
 
@@ -628,19 +751,22 @@ class _GuessImageScreenState extends State<GuessImageScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(Icons.error_outline, size: 64, color: AppColors.red),
-              SizedBox(height: 16),
-              Text(
-                _errorMessage!,
-                textAlign: TextAlign.center,
-                style: AppText.bodyWhite.copyWith(color: AppColors.maroon),
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Text(
+                  _errorMessage!,
+                  textAlign: TextAlign.center,
+                  style: AppText.bodyWhite.copyWith(color: AppColors.maroon),
+                ),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () {
                   _audioManager.playSFX('klik.mp3');
                   Navigator.pop(context);
                 },
-                child: Text('Kembali'),
+                child: const Text('Kembali'),
               ),
             ],
           ),
@@ -650,6 +776,7 @@ class _GuessImageScreenState extends State<GuessImageScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.lightGrey,
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         backgroundColor: AppColors.maroon,
         leading: IconButton(
@@ -664,7 +791,7 @@ class _GuessImageScreenState extends State<GuessImageScreen> {
             Image.asset('assets/logo/iqnock.png', height: 30),
             const SizedBox(width: 8),
             Text(
-              "Soal ${widget.levelNumber}",
+              "Level ${widget.levelNumber}",
               style: AppText.heading.copyWith(fontSize: 20),
             ),
           ],
@@ -695,135 +822,143 @@ class _GuessImageScreenState extends State<GuessImageScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          const SizedBox(height: 20),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: _useHint,
-                  icon: Image.asset(
-                    'assets/icons/bulb.png',
-                    width: 20,
-                    height: 20,
-                  ),
-                  label: Text(
-                    'Hint ($_hints)',
-                    style: AppText.bodyWhite.copyWith(fontSize: 16),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.maroon,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 12,
-                    ),
-                  ),
-                ),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    _audioManager.playSFX('klik.mp3');
-                    // TODO: Share functionality
-                  },
-                  icon: const Icon(Icons.share, color: AppColors.white),
-                  label: Text(
-                    'Share',
-                    style: AppText.bodyWhite.copyWith(fontSize: 16),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.red,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 12,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            height: 300,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: AppColors.maroon,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.gold, width: 3),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(13),
-              child: _buildImageWidget(),
-            ),
-          ),
-          const Spacer(),
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: const BoxDecoration(
-              color: AppColors.maroon,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(24),
-                topRight: Radius.circular(24),
-              ),
-            ),
-            child: Column(
-              children: [
-                TextField(
-                  controller: _answerController,
-                  textAlign: TextAlign.center,
-                  style: AppText.bodyWhite.copyWith(fontSize: 20),
-                  textCapitalization: TextCapitalization.characters,
-                  decoration: InputDecoration(
-                    hintText: 'Tulis jawabanmu...',
-                    hintStyle: AppText.bodyWhite.copyWith(
-                      fontSize: 18,
-                      color: AppColors.lightGrey,
-                    ),
-                    filled: true,
-                    fillColor: AppColors.background,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: _isSubmitting ? null : _checkAnswer,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.red,
-                      disabledBackgroundColor: AppColors.red.withOpacity(0.5),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+      body: SingleChildScrollView(
+        child: SizedBox(
+          height:
+              MediaQuery.of(context).size.height -
+              AppBar().preferredSize.height -
+              MediaQuery.of(context).padding.top,
+          child: Column(
+            children: [
+              const SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: _useHint,
+                      icon: Image.asset(
+                        'assets/icons/bulb.png',
+                        width: 23,
+                        height: 23,
+                      ),
+                      label: Text(
+                        'Hint ($_hints)',
+                        style: AppText.bodyWhite.copyWith(fontSize: 16),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.maroon,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
                       ),
                     ),
-                    child: _isSubmitting
-                        ? SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              color: AppColors.white,
-                              strokeWidth: 2,
-                            ),
-                          )
-                        : Text(
-                            'CEK',
-                            style: AppText.bodyWhite.copyWith(
-                              fontSize: 20,
-                              color: AppColors.white,
-                            ),
-                          ),
+                    ElevatedButton.icon(
+                      onPressed: _showShareOptions,
+                      icon: const Icon(Icons.share, color: AppColors.white),
+                      label: Text(
+                        'Share',
+                        style: AppText.bodyWhite.copyWith(fontSize: 16),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.red,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                height: 350,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: AppColors.maroon,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.gold, width: 1),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(13),
+                  child: _buildImageWidget(),
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: const BoxDecoration(
+                  color: AppColors.maroon,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(24),
+                    topRight: Radius.circular(24),
                   ),
                 ),
-              ],
-            ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: _answerController,
+                      textAlign: TextAlign.center,
+                      style: AppText.bodyWhite.copyWith(fontSize: 20),
+                      textCapitalization: TextCapitalization.characters,
+                      decoration: InputDecoration(
+                        hintText: 'Tulis jawabanmu...',
+                        hintStyle: AppText.bodyWhite.copyWith(
+                          fontSize: 18,
+                          color: AppColors.lightGrey,
+                        ),
+                        filled: true,
+                        fillColor: AppColors.background,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: _isSubmitting ? null : _checkAnswer,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.red,
+                          disabledBackgroundColor: AppColors.red.withOpacity(
+                            0.5,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: _isSubmitting
+                            ? const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  color: AppColors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Text(
+                                'CEK',
+                                style: AppText.bodyWhite.copyWith(
+                                  fontSize: 20,
+                                  color: AppColors.white,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

@@ -3,8 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  // Base URL Laravel kamu
-  static const String baseUrl = 'http://127.0.0.1:8080/api/v1';
+  static const String baseUrl = 'https://iqnock.up.railway.app/api/v1';
 
   // Singleton pattern
   static final ApiService _instance = ApiService._internal();

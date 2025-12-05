@@ -15,8 +15,7 @@ class QuestionModel {
     return QuestionModel(
       questionId: json['question_id'],
       levelNumber: json['level_number'],
-      // Support both image_url and image_data from API
-      imageUrl: json['image_data'] ?? json['image_url'] ?? '',
+      imageUrl: json['image_url'] ?? json['image_data'] ?? '',
       points: json['points'],
     );
   }
