@@ -11,12 +11,20 @@ class AudioManager {
 
   double _bgmVolume = 1;
   double _sfxVolume = 0.6;
+  bool _isInitialized = false;
 
   // Initialize audio
   Future<void> init() async {
+    if (_isInitialized) return; // Prevent re-initialization
+
     await loadVolumes();
+
+    // Set player mode to keep playing in background/navigation
     await _bgmPlayer.setReleaseMode(ReleaseMode.loop);
+    await _bgmPlayer.setPlayerMode(PlayerMode.mediaPlayer); // IMPORTANT!
+
     await playBGM();
+    _isInitialized = true;
   }
 
   // Load volumes from SharedPreferences
@@ -37,6 +45,11 @@ class AudioManager {
   // Play BGM
   Future<void> playBGM() async {
     try {
+      // Check if already playing
+      if (_bgmPlayer.state == PlayerState.playing) {
+        return;
+      }
+
       await _bgmPlayer.play(AssetSource('bgm/bgm.mp3'));
       await _bgmPlayer.setVolume(_bgmVolume);
     } catch (e) {
@@ -87,7 +100,7 @@ class AudioManager {
     }
   }
 
-  // Dispose players
+  // Dispose players (JANGAN DIPANGGIL DI SCREEN DISPOSE!)
   void dispose() {
     _bgmPlayer.dispose();
     _sfxPlayer.dispose();

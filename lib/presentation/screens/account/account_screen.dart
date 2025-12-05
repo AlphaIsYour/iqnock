@@ -79,7 +79,7 @@ class _AccountScreenState extends State<AccountScreen> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          backgroundColor: AppColors.lightGrey,
+          backgroundColor: const Color.fromARGB(255, 247, 245, 248),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
@@ -347,7 +347,7 @@ class _AccountScreenState extends State<AccountScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.lightGrey,
+        backgroundColor: const Color.fromARGB(255, 252, 249, 255),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
           'Konfirmasi Logout',
@@ -422,14 +422,14 @@ class _AccountScreenState extends State<AccountScreen> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Scaffold(
-        backgroundColor: AppColors.lightGrey,
+        backgroundColor: const Color.fromARGB(255, 252, 248, 255),
         body: Center(child: CircularProgressIndicator(color: AppColors.maroon)),
       );
     }
 
     if (_errorMessage != null || _user == null) {
       return Scaffold(
-        backgroundColor: AppColors.lightGrey,
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -466,7 +466,7 @@ class _AccountScreenState extends State<AccountScreen> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.lightGrey,
+      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
       appBar: AppBar(
         backgroundColor: AppColors.maroon,
         centerTitle: true,
@@ -486,11 +486,14 @@ class _AccountScreenState extends State<AccountScreen> {
                 width: 120,
                 height: 120,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppColors.white, width: 3),
+                  borderRadius: BorderRadius.circular(28),
+                  border: Border.all(
+                    color: const Color.fromARGB(255, 184, 184, 184),
+                    width: 3,
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.white.withOpacity(0.3),
+                      color: AppColors.white.withOpacity(0.8),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -528,7 +531,7 @@ class _AccountScreenState extends State<AccountScreen> {
                     vertical: 10,
                   ),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   elevation: 3,
                 ),
@@ -614,7 +617,7 @@ class _AccountScreenState extends State<AccountScreen> {
                             0.5,
                           ),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25),
+                            borderRadius: BorderRadius.circular(10),
                           ),
                         ),
                       ),

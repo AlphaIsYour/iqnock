@@ -164,14 +164,14 @@ class _GameScreenState extends State<GameScreen> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Scaffold(
-        backgroundColor: AppColors.lightGrey,
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
         body: Center(child: CircularProgressIndicator(color: AppColors.maroon)),
       );
     }
 
     if (_errorMessage != null) {
       return Scaffold(
-        backgroundColor: AppColors.lightGrey,
+        backgroundColor: const Color.fromARGB(255, 255, 254, 255),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -197,7 +197,7 @@ class _GameScreenState extends State<GameScreen> {
     int groupEnd = groupStart + 9;
 
     return Scaffold(
-      backgroundColor: AppColors.lightGrey,
+      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
       appBar: AppBar(
         backgroundColor: AppColors.maroon,
         centerTitle: true,

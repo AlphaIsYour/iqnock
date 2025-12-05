@@ -775,7 +775,7 @@ https://drive.google.com/file/d/1GuMz0ggojTbkAM1yNMiCnYgqEJRG-WMB/view?usp=drive
     }
 
     return Scaffold(
-      backgroundColor: AppColors.lightGrey,
+      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         backgroundColor: AppColors.maroon,
